@@ -7,4 +7,6 @@ public interface IfClientServerProtocol {
 	public static final String OK = "#OK";
 	public static final String ADD = "#+#";
 	public static final String DEL = "#-#";
+	public static final String NVELLESESSION = "#NVS#";
+	public static final String NVMSGPRIVE = "#MSGPRIVE#";
 }
