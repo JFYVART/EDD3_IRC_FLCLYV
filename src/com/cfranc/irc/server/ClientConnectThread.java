@@ -12,7 +12,7 @@ import javax.swing.text.StyledDocument;
 
 import com.cfranc.irc.IfClientServerProtocol;
 
-public class ClientConnectThread extends Thread implements IfClientServerProtocol {
+public class ClientConnectThread extends Thread {
 	StyledDocument model=null;
 	DefaultListModel<String> clientListModel;		
 	
@@ -69,12 +69,12 @@ public class ClientConnectThread extends Thread implements IfClientServerProtoco
 		// Read user login and pwd
 		DataInputStream dis=new DataInputStream(socket.getInputStream());
 		DataOutputStream dos=new DataOutputStream(socket.getOutputStream());
-		dos.writeUTF(LOGIN_PWD);
+		dos.writeUTF(IfClientServerProtocol.LOGIN_PWD);
 		while(dis.available()<=0){
 			Thread.sleep(100);
 		}
 		String reponse=dis.readUTF();
-		String[] userPwd=reponse.split(SEPARATOR);
+		String[] userPwd=reponse.split(IfClientServerProtocol.SEPARATOR);
 		String login=userPwd[1];
 		String pwd=userPwd[2];
 		int salonUser=0;
@@ -83,18 +83,18 @@ public class ClientConnectThread extends Thread implements IfClientServerProtoco
 		if(isUserOK){
 			
 			ServerToClientThread client=new ServerToClientThread(newUser, socket);
-			dos.writeUTF(OK);
+			dos.writeUTF(IfClientServerProtocol.OK);
 
 			// Add user
 			if(BroadcastThread.addClient(newUser, client)){
 				client.start();			
 				clientListModel.addElement(newUser.getLogin());
-				dos.writeUTF(ADD+login);
+				dos.writeUTF(IfClientServerProtocol.ADD+login);
 			}
 		}
 		else{
 			System.out.println("socket.close()");
-			dos.writeUTF(KO);
+			dos.writeUTF(IfClientServerProtocol.KO);
 			dos.close();
 			socket.close();
 		}
