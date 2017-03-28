@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Collections;
 
 import javax.swing.DefaultListModel;
 import javax.swing.text.BadLocationException;
@@ -14,7 +15,7 @@ import com.cfranc.irc.ClientServerProtocol;
 
 public class ClientConnectThread extends Thread {
 	StyledDocument model=null;
-	DefaultListModel<String> clientListModel;		
+	DefaultListModel<String> clientListModel;
 	
 	private boolean canStop=false;
 	private ServerSocket server = null;
@@ -86,7 +87,7 @@ public class ClientConnectThread extends Thread {
 		int salonUser=0;
 		// On crée un objet User à partir de ces 2 informations.
 		User newUser=new User(loginUtilisateur, loginUtilisateur, salonUser);
-		boolean isUserOK=authentication(newUser);
+		boolean isUserOK=authentication(newUser, salonUser);
 		if(isUserOK){
 			
 			ServerToClientThread client=new ServerToClientThread(newUser, socket);
@@ -113,8 +114,8 @@ public class ClientConnectThread extends Thread {
 		}
 	}
 	
-	private boolean authentication(User newUser){
-		return BroadcastThread.accept(newUser);
+	private boolean authentication(User newUser, int idsalon){
+		return BroadcastThread.accept(newUser, idsalon);
 	}
 
 	

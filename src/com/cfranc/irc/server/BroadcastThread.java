@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import javax.swing.DefaultListModel;
+
 import com.cfranc.irc.ClientServerProtocol;
 
 public class BroadcastThread extends Thread {
@@ -42,7 +44,7 @@ public class BroadcastThread extends Thread {
 		return res;
 	}
 
-	public static void sendMessage(User sender, String msg){
+	public static void sendMessage(User sender, String pwd, String msg, String command, int idSalon, String nomSalon){
 		// Nouveau protocole :
 		String line;
 		
@@ -51,17 +53,18 @@ public class BroadcastThread extends Thread {
 		while (receiverClientThreadIterator.hasNext()) {
 			ServerToClientThread clientThread = (ServerToClientThread) receiverClientThreadIterator.next();
 			// Nouveau protocole : On envoie le message en précisant le login et le msg 
-			line = ClientServerProtocol.encodeProtocole_Ligne(sender.getLogin(), "", msg, "", 0, "");
+			line = ClientServerProtocol.encodeProtocole_Ligne(sender.getLogin(), pwd, msg, command,idSalon, nomSalon);
 			clientThread.post(line);
 			System.out.println("sendMessage : "+"#"+sender.getLogin()+"#"+msg);
 		}
 	}
 	
-	public static void removeClient(User user){
+	public static void removeClient(User user, int idSalon){
 		clientTreadsMap.remove(user);
+	
 	}
 	
-	public static boolean accept(User user){
+	public static boolean accept(User user, int idSalon){
 		boolean res=true;
 		if(clientTreadsMap.containsKey(user)){
 			res= false;

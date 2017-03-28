@@ -13,6 +13,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.text.StyledDocument;
 
+import com.cfranc.irc.server.BroadcastThread;
 import com.cfranc.irc.server.SalonLst;
 
 import javax.swing.event.ListSelectionListener;

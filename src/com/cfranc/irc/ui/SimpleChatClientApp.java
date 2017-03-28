@@ -98,13 +98,13 @@ public class SimpleChatClientApp {
 			
 			@Override
 			public void windowClosing(WindowEvent e) {
-				// TODO Auto-generated method stub
+				quitApp(SimpleChatClientApp.this);
 				
 			}
 			
 			@Override
 			public void windowClosed(WindowEvent e) {
-				quitApp(SimpleChatClientApp.this);
+				
 			}
 			
 			@Override

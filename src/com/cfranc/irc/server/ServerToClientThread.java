@@ -8,6 +8,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.DefaultListModel;
+
 import com.cfranc.irc.ClientServerProtocol;
 
 public class ServerToClientThread extends Thread{
@@ -68,13 +70,20 @@ public class ServerToClientThread extends Thread{
 						String login = ClientServerProtocol.decodeProtocole_Login(line);
 						String msg = ClientServerProtocol.decodeProtocole_Message(line);
 						String commande = ClientServerProtocol.decodeProtocole_Command(line);
-						// Si le message est ".bye" => on arrete
-						done = msg.equals(".bye");
+						String pwd = ClientServerProtocol.decodeProtocole_PWD(line);
+						String nomSalon = ClientServerProtocol.decodeProtocole_NomSalon(line);
+						int idSalon = ClientServerProtocol.decodeProtocole_IdSalon(line);
+						// Si la commande est DEL => on arrete
+						done = commande.equals(ClientServerProtocol.DEL);
 						if(!done){
 							if(login.equals(user)){
 								System.err.println("ServerToClientThread::run(), login!=user"+login);
 							}
-							BroadcastThread.sendMessage(user,msg);
+							BroadcastThread.sendMessage(user,pwd, msg, commande, idSalon,nomSalon);
+						} else
+						{
+							BroadcastThread.sendMessage(user,pwd, msg, commande, idSalon,nomSalon);
+							BroadcastThread.removeClient(user, idSalon);
 						}
 					}
 					else{
