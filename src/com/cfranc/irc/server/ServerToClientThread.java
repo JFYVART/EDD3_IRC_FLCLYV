@@ -8,7 +8,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.cfranc.irc.IfClientServerProtocol;
+import com.cfranc.irc.ClientServerProtocol;
 
 public class ServerToClientThread extends Thread{
 	private User user;
@@ -63,10 +63,12 @@ public class ServerToClientThread extends Thread{
 			while (!done) {
 				try {
 					if(streamIn.available()>0){
+						// Nouveau protocole : on décode le message du client
 						String line = streamIn.readUTF();
-						String[] userMsg=line.split(IfClientServerProtocol.SEPARATOR);
-						String login=userMsg[1];
-						String msg=userMsg[2];
+						String login = ClientServerProtocol.decodeProtocole_Login(line);
+						String msg = ClientServerProtocol.decodeProtocole_Message(line);
+						String commande = ClientServerProtocol.decodeProtocole_Command(line);
+						// Si le message est ".bye" => on arrete
 						done = msg.equals(".bye");
 						if(!done){
 							if(login.equals(user)){

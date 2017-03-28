@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import com.cfranc.irc.IfClientServerProtocol;
+import com.cfranc.irc.ClientServerProtocol;
 
 public class BroadcastThread extends Thread {
 	
@@ -17,6 +17,8 @@ public class BroadcastThread extends Thread {
 	
 	public static boolean addClient(User user, ServerToClientThread serverToClientThread){
 		boolean res=true;
+		// Nouveau protocole :
+		String line;
 		if(clientTreadsMap.containsKey(user)){
 			res=false;
 		}
@@ -24,24 +26,33 @@ public class BroadcastThread extends Thread {
 			//clientTreadsMap.put(user, serverToClientThread);	
 			// modifs du 03/11 : ajout de tous les users à la liste des users des clients
 			for(Entry<User, ServerToClientThread> entry : clientTreadsMap.entrySet()) {
-				entry.getValue().post(IfClientServerProtocol.ADD+user.getLogin());
+				// Nouveau protocole : On signale à chaque Thread client l'arrivée d'un nouvel utilisateur
+				line = ClientServerProtocol.encodeProtocole_Ligne(user.getLogin(), "", "", ClientServerProtocol.ADD, 0, "");
+				entry.getValue().post(line);
 			}
 			
 			clientTreadsMap.put(user, serverToClientThread);
 			
 			for (Entry<User, ServerToClientThread> entry : clientTreadsMap.entrySet()) {
-			serverToClientThread.post(IfClientServerProtocol.ADD+entry.getKey().getLogin());   
+				// Nouveau protocole : On signale au nouveal arrivant les utilisateurs existants
+				line = ClientServerProtocol.encodeProtocole_Ligne(entry.getKey().getLogin(), "", "", ClientServerProtocol.ADD, 0, "");
+				serverToClientThread.post(line);
 			} 
 		}
 		return res;
 	}
 
 	public static void sendMessage(User sender, String msg){
+		// Nouveau protocole :
+		String line;
+		
 		Collection<ServerToClientThread> clientTreads=clientTreadsMap.values();
 		Iterator<ServerToClientThread> receiverClientThreadIterator=clientTreads.iterator();
 		while (receiverClientThreadIterator.hasNext()) {
 			ServerToClientThread clientThread = (ServerToClientThread) receiverClientThreadIterator.next();
-			clientThread.post("#"+sender.getLogin()+"#"+msg);			
+			// Nouveau protocole : On envoie le message en précisant le login et le msg 
+			line = ClientServerProtocol.encodeProtocole_Ligne(sender.getLogin(), "", msg, "", 0, "");
+			clientThread.post(line);
 			System.out.println("sendMessage : "+"#"+sender.getLogin()+"#"+msg);
 		}
 	}

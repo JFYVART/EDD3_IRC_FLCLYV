@@ -1,24 +1,24 @@
 package com.cfranc.irc;
 
-public class IfClientServerProtocol {
-	public static final String LOGIN_PWD = "#Login?#Pwd?";
+public class ClientServerProtocol {
+	public static final String LOGIN_PWD = "LoginPwd";
 	public static final String SEPARATOR = "#";
 	
 	/**
 	 *  Liste des commandes utilisables
 	 */
 	// Pb technique ou refus d'une action demandée
-	public static final String KO = "#KO";
+	public static final String KO = "KO";
 	// Acceptation d'une action demandée
-	public static final String OK = "#OK";
+	public static final String OK = "OK";
 	// Un nouvel utilisateur arrive dans un salon
-	public static final String ADD = "#+#";
+	public static final String ADD = "+";
 	// Un utilisateur quitte un salon 
-	public static final String DEL = "#-#";
+	public static final String DEL = "-";
 	// Un utilisateur demande la création d'un nouveau salon
-	public static final String NVSALON = "#NVS#";
+	public static final String NVSALON = "NVS";
 	// Un utilisateur demande la création d'un msg privé
-	public static final String NVMSGPRIVE = "#MSGPRIVE#";
+	public static final String NVMSGPRIVE = "MSGPRIVE";
 
 	/**
 	 * Régle de communication : Tout msg doit avoir cette syntaxe
@@ -42,7 +42,7 @@ public class IfClientServerProtocol {
 	 **/
 
 	public static String decodeProtocole_Login(String line) {
-		String[] userMsg = line.split(IfClientServerProtocol.SEPARATOR);
+		String[] userMsg = line.split(ClientServerProtocol.SEPARATOR);
 		String login = userMsg[1];
 		if (login == null)
 			login = "";
@@ -50,7 +50,7 @@ public class IfClientServerProtocol {
 	}
 
 	public static String decodeProtocole_PWD(String line) {
-		String[] userMsg = line.split(IfClientServerProtocol.SEPARATOR);
+		String[] userMsg = line.split(ClientServerProtocol.SEPARATOR);
 		String pwd = userMsg[2];
 		if (pwd == null)
 			pwd = "";
@@ -58,7 +58,7 @@ public class IfClientServerProtocol {
 	}
 
 	public static String decodeProtocole_Message(String line) {
-		String[] userMsg = line.split(IfClientServerProtocol.SEPARATOR);
+		String[] userMsg = line.split(ClientServerProtocol.SEPARATOR);
 		String msg = userMsg[3];
 		if (msg == null)
 			msg = "";
@@ -66,7 +66,7 @@ public class IfClientServerProtocol {
 	}
 
 	public static String decodeProtocole_Command(String line) {
-		String[] userMsg = line.split(IfClientServerProtocol.SEPARATOR);
+		String[] userMsg = line.split(ClientServerProtocol.SEPARATOR);
 		String command = userMsg[4];
 		if (command == null)
 			command = "";
@@ -74,7 +74,7 @@ public class IfClientServerProtocol {
 	}
 
 	public static int decodeProtocole_IdSalon(String line) {
-		String[] userMsg = line.split(IfClientServerProtocol.SEPARATOR);
+		String[] userMsg = line.split(ClientServerProtocol.SEPARATOR);
 		String idSalonString = userMsg[5];
 		if (idSalonString == null)
 			idSalonString = "0";
@@ -82,7 +82,7 @@ public class IfClientServerProtocol {
 	}
 
 	public static String decodeProtocole_NomSalon(String line) {
-		String[] userMsg = line.split(IfClientServerProtocol.SEPARATOR);
+		String[] userMsg = line.split(ClientServerProtocol.SEPARATOR);
 		String salonName = userMsg[6];
 		if (salonName == null)
 			salonName = "";

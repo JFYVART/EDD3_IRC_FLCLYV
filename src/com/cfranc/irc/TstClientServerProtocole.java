@@ -16,8 +16,8 @@ public class TstClientServerProtocole {
 		int salonId = 0;
 		String salonName = "";
 		
-		line = IfClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
-		assertEquals(login,IfClientServerProtocol.decodeProtocole_Login(line));
+		line = ClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
+		assertEquals(login,ClientServerProtocol.decodeProtocole_Login(line));
 	}
 	
 	@Test
@@ -30,8 +30,8 @@ public class TstClientServerProtocole {
 		int salonId = 0;
 		String salonName = "";
 		
-		line = IfClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
-		assertEquals(pwd,IfClientServerProtocol.decodeProtocole_PWD(line));
+		line = ClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
+		assertEquals(pwd,ClientServerProtocol.decodeProtocole_PWD(line));
 	}	
 	
 	@Test
@@ -44,8 +44,8 @@ public class TstClientServerProtocole {
 		int salonId = 0;
 		String salonName = "";
 		
-		line = IfClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
-		assertEquals(msg,IfClientServerProtocol.decodeProtocole_Message(line));
+		line = ClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
+		assertEquals(msg,ClientServerProtocol.decodeProtocole_Message(line));
 	}
 	
 	@Test
@@ -58,8 +58,8 @@ public class TstClientServerProtocole {
 		int salonId = 0;
 		String salonName = "";
 		
-		line = IfClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
-		assertEquals(command,IfClientServerProtocol.decodeProtocole_Command(line));
+		line = ClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
+		assertEquals(command,ClientServerProtocol.decodeProtocole_Command(line));
 	}
 	
 	@Test
@@ -72,8 +72,8 @@ public class TstClientServerProtocole {
 		int salonId = 6;
 		String salonName = "";
 		
-		line = IfClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
-		assertEquals(salonId,IfClientServerProtocol.decodeProtocole_IdSalon(line));
+		line = ClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
+		assertEquals(salonId,ClientServerProtocol.decodeProtocole_IdSalon(line));
 	}	
 	
 	@Test
@@ -86,8 +86,8 @@ public class TstClientServerProtocole {
 		int salonId = 0;
 		String salonName = "Salon Général";
 		
-		line = IfClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
-		assertEquals(salonName,IfClientServerProtocol.decodeProtocole_NomSalon(line));
+		line = ClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
+		assertEquals(salonName,ClientServerProtocol.decodeProtocole_NomSalon(line));
 	}
 	
 	@Test
@@ -100,8 +100,8 @@ public class TstClientServerProtocole {
 		int salonId = 0;
 		String salonName = "";
 		
-		line = IfClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
-		assertEquals(login,IfClientServerProtocol.decodeProtocole_Login(line));
+		line = ClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
+		assertEquals(login,ClientServerProtocol.decodeProtocole_Login(line));
 	}
 	
 	@Test
@@ -114,8 +114,8 @@ public class TstClientServerProtocole {
 		int salonId = 0;
 		String salonName = "";
 		
-		line = IfClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
-		assertEquals(pwd,IfClientServerProtocol.decodeProtocole_PWD(line));
+		line = ClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
+		assertEquals(pwd,ClientServerProtocol.decodeProtocole_PWD(line));
 	}	
 	
 	@Test
@@ -128,8 +128,8 @@ public class TstClientServerProtocole {
 		int salonId = 0;
 		String salonName = "";
 		
-		line = IfClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
-		assertEquals(msg,IfClientServerProtocol.decodeProtocole_Message(line));
+		line = ClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
+		assertEquals(msg,ClientServerProtocol.decodeProtocole_Message(line));
 	}
 	
 	@Test
@@ -142,8 +142,8 @@ public class TstClientServerProtocole {
 		int salonId = 0;
 		String salonName = "";
 		
-		line = IfClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
-		assertEquals(command,IfClientServerProtocol.decodeProtocole_Command(line));
+		line = ClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName);
+		assertEquals(command,ClientServerProtocol.decodeProtocole_Command(line));
 	}
 	
 }

@@ -10,7 +10,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
-import com.cfranc.irc.IfClientServerProtocol;
+import com.cfranc.irc.ClientServerProtocol;
 
 public class ClientConnectThread extends Thread {
 	StyledDocument model=null;
@@ -69,32 +69,45 @@ public class ClientConnectThread extends Thread {
 		// Read user login and pwd
 		DataInputStream dis=new DataInputStream(socket.getInputStream());
 		DataOutputStream dos=new DataOutputStream(socket.getOutputStream());
-		dos.writeUTF(IfClientServerProtocol.LOGIN_PWD);
+		
+		// Nouveau protocole : On demande le login et pwd
+		String loginUtilisateur = "";
+		String pwdUtilisateur = "";
+		String line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, "", ClientServerProtocol.LOGIN_PWD, 0, "");
+		dos.writeUTF(line);
 		while(dis.available()<=0){
 			Thread.sleep(100);
 		}
 		String reponse=dis.readUTF();
-		String[] userPwd=reponse.split(IfClientServerProtocol.SEPARATOR);
-		String login=userPwd[1];
-		String pwd=userPwd[2];
+		
+		// Nouveau protocole : on lit le login et pwd retournés par le client 
+		loginUtilisateur = ClientServerProtocol.decodeProtocole_Login(reponse);
+		pwdUtilisateur = ClientServerProtocol.decodeProtocole_PWD(reponse);
 		int salonUser=0;
-		User newUser=new User(login, pwd, salonUser);
+		// On crée un objet User à partir de ces 2 informations.
+		User newUser=new User(loginUtilisateur, loginUtilisateur, salonUser);
 		boolean isUserOK=authentication(newUser);
 		if(isUserOK){
 			
 			ServerToClientThread client=new ServerToClientThread(newUser, socket);
-			dos.writeUTF(IfClientServerProtocol.OK);
+			// Nouveau protocole :  On accepte la connexion.
+			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, "", ClientServerProtocol.OK, 0, "");
+			dos.writeUTF(line);
 
 			// Add user
 			if(BroadcastThread.addClient(newUser, client)){
 				client.start();			
 				clientListModel.addElement(newUser.getLogin());
-				dos.writeUTF(IfClientServerProtocol.ADD+login);
+				// Nouveau protocole : On signale l'arrivée de cet utilisateur 
+				line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, "", ClientServerProtocol.ADD, 0, "");
+				dos.writeUTF(line);
 			}
 		}
 		else{
 			System.out.println("socket.close()");
-			dos.writeUTF(IfClientServerProtocol.KO);
+			// Nouveau protocole :  On refuse la connexion et on transmet une erreur. 
+			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, "", ClientServerProtocol.KO, 0, "");
+			dos.writeUTF(line);
 			dos.close();
 			socket.close();
 		}
