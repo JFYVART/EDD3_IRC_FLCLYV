@@ -5,12 +5,17 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Observable;
+import java.util.Observer;
 
 import javax.swing.DefaultListModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
 import com.cfranc.irc.ClientServerProtocol;
+
+import javafx.beans.InvalidationListener;
+
 
 public class ClientConnectThread extends Thread {
 	StyledDocument model=null;
@@ -73,6 +78,8 @@ public class ClientConnectThread extends Thread {
 		// Nouveau protocole : On demande le login et pwd
 		String loginUtilisateur = "";
 		String pwdUtilisateur = "";
+		//String nomSalon = "";
+		//int salonUser;
 		String line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, "", ClientServerProtocol.LOGIN_PWD, 0, "");
 		dos.writeUTF(line);
 		while(dis.available()<=0){
@@ -84,6 +91,11 @@ public class ClientConnectThread extends Thread {
 		loginUtilisateur = ClientServerProtocol.decodeProtocole_Login(reponse);
 		pwdUtilisateur = ClientServerProtocol.decodeProtocole_PWD(reponse);
 		int salonUser=0;
+		//recup salon 
+		//nomSalon = ClientServerProtocol.decodeProtocole_NomSalon(reponse);
+		//salonUser = ClientServerProtocol.decodeProtocole_IdSalon(reponse);
+	
+		
 		// On crée un objet User à partir de ces 2 informations.
 		User newUser=new User(loginUtilisateur, loginUtilisateur, salonUser);
 		boolean isUserOK=authentication(newUser);
@@ -126,4 +138,6 @@ public class ClientConnectThread extends Thread {
 		if (server != null)
 			server.close();
 	}
+
+
 }

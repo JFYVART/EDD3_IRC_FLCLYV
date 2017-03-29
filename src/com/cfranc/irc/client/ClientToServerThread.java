@@ -178,6 +178,7 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 			String acq = streamIn.readUTF();
 			// Nouveau protocole : On décode la réponse du serveur
 			commande = ClientServerProtocol.decodeProtocole_Command(acq);
+			String nomSalon = ClientServerProtocol.decodeProtocole_NomSalon(acq);
 			// Si la commande est une réponse positive
 			if (commande.equals(ClientServerProtocol.OK)) {
 				res = true;

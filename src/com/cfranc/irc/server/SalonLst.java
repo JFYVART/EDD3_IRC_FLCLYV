@@ -17,9 +17,9 @@ public class SalonLst  {
 	public Salon get(int i) {
 		
 		return (Salon) lstSalons.get(i);
-		
-		
+			
 	}
 
+ 
 
 }

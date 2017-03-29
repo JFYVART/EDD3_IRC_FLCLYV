@@ -7,6 +7,9 @@ import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Scanner;
 
 import javax.swing.DefaultListModel;
@@ -22,7 +25,7 @@ import javax.swing.text.StyledDocument;
 import com.cfranc.irc.client.ClientToServerThread;
 import com.cfranc.irc.server.ClientConnectThread;
 
-public class SimpleChatClientApp {
+public class SimpleChatClientApp implements Observer{
     static String[] ConnectOptionNames = { "Connect" };	
     static String   ConnectTitle = "Connection Information";
     Socket socketClientServer;
@@ -34,6 +37,11 @@ public class SimpleChatClientApp {
 	private SimpleChatFrameClient frame;
 	public StyledDocument documentModel=new DefaultStyledDocument();
 	DefaultListModel<String> clientListModel=new DefaultListModel<String>();
+
+	
+	
+	// HashMap pour chaque salon de ces éléments
+	// le bouton envoyer devra récupérer le salon actif pour savoir sur lequel envoyer
 	
     public static final String BOLD_ITALIC = "BoldItalic";
     public static final String GRAY_PLAIN = "Gray";
@@ -191,5 +199,12 @@ public class SimpleChatClientApp {
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	public void update(Observable o, Object arg) {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 }

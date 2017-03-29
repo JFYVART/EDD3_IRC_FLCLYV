@@ -68,6 +68,8 @@ public class ServerToClientThread extends Thread{
 						String login = ClientServerProtocol.decodeProtocole_Login(line);
 						String msg = ClientServerProtocol.decodeProtocole_Message(line);
 						String commande = ClientServerProtocol.decodeProtocole_Command(line);
+						//rajouter decode Salon pour ensuite afficher sur l'onglet approprié
+						
 						// Si le message est ".bye" => on arrete
 						done = msg.equals(".bye");
 						if(!done){
