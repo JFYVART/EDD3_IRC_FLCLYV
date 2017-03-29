@@ -33,7 +33,7 @@ public class SimpleChatServerApp {
 		((JFrame)this.frame).setVisible(true);
 		
 		// Start connection services
-		this.clientConnectThread=new ClientConnectThread(port, this.model, clientListModel);
+		this.clientConnectThread=new ClientConnectThread(port, this.model, clientListModel, mySalons);
 		this.clientConnectThread.start();
 	}
 	
