@@ -7,7 +7,6 @@ import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Scanner;
@@ -15,7 +14,6 @@ import java.util.Scanner;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -23,7 +21,7 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
 import com.cfranc.irc.client.ClientToServerThread;
-import com.cfranc.irc.server.ClientConnectThread;
+import com.cfranc.irc.server.Salon;
 
 public class SimpleChatClientApp implements Observer{
     static String[] ConnectOptionNames = { "Connect" };	
@@ -37,6 +35,7 @@ public class SimpleChatClientApp implements Observer{
 	private SimpleChatFrameClient frame;
 	public StyledDocument documentModel=new DefaultStyledDocument();
 	DefaultListModel<String> clientListModel=new DefaultListModel<String>();
+	DefaultListModel<Salon> salonListModel=new DefaultListModel<Salon>();
 
 	
 	
@@ -75,7 +74,7 @@ public class SimpleChatClientApp implements Observer{
 	public void displayClient() {
 		
 		// Init GUI
-		this.frame=new SimpleChatFrameClient(clientToServerThread, clientListModel, documentModel);
+		this.frame=new SimpleChatFrameClient(clientToServerThread, clientListModel, documentModel,  salonListModel);
 		this.frame.setTitle(this.frame.getTitle()+" : "+clientName+" connected to "+serverName+":"+serverPort);
 		((JFrame)this.frame).setVisible(true);
 		this.frame.addWindowListener(new WindowListener() {
@@ -146,7 +145,7 @@ public class SimpleChatClientApp implements Observer{
 		try {
 			socketClientServer = new Socket(this.serverName, this.serverPort);
 			// Start connection services
-			clientToServerThread=new ClientToServerThread(documentModel, clientListModel,socketClientServer,clientName, clientPwd);
+			clientToServerThread=new ClientToServerThread(documentModel, clientListModel,socketClientServer,clientName, clientPwd,  salonListModel);
 			clientToServerThread.start();
 
 			System.out.println("Connected: " + socketClientServer);
