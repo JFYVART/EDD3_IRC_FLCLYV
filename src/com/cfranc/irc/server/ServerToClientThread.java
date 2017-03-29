@@ -17,11 +17,13 @@ public class ServerToClientThread extends Thread{
 	private Socket socket = null;
 	private DataInputStream streamIn = null;
 	private DataOutputStream streamOut = null;
+	private DefaultListModel<String> clientListModel;
 	
-	public ServerToClientThread(User user, Socket socket) {
+	public ServerToClientThread(User user, Socket socket, DefaultListModel<String> clientListModel) {
 		super();
 		this.user=user;
 		this.socket = socket;
+		this.clientListModel = clientListModel;
 	}
 	
 	List<String> msgToPost=new ArrayList<String>();
@@ -75,6 +77,7 @@ public class ServerToClientThread extends Thread{
 						int idSalon = ClientServerProtocol.decodeProtocole_IdSalon(line);
 						// Si la commande est DEL => on arrete
 						done = commande.equals(ClientServerProtocol.DEL);
+						// Tant que l'on ne reçoit pas de demande de départ (commande = DEL), on ne fait que retransmettre le msg reçu 
 						if(!done){
 							if(login.equals(user)){
 								System.err.println("ServerToClientThread::run(), login!=user"+login);
@@ -82,8 +85,12 @@ public class ServerToClientThread extends Thread{
 							BroadcastThread.sendMessage(user,pwd, msg, commande, idSalon,nomSalon);
 						} else
 						{
+							// On informes les IHM clients qu'un utilisateur s'en va
 							BroadcastThread.sendMessage(user,pwd, msg, commande, idSalon,nomSalon);
+							// On supprime l'utilisateur de la liste des Utilisateur du salon
 							BroadcastThread.removeClient(user, idSalon);
+							// Suppression de l'utilisateur de la liste des utilisateurs connectés (IHM Serveur) 
+							clientListModel.removeElement(user.getLogin());
 						}
 					}
 					else{

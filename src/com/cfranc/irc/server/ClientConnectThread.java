@@ -90,7 +90,7 @@ public class ClientConnectThread extends Thread {
 		boolean isUserOK=authentication(newUser, salonUser);
 		if(isUserOK){
 			
-			ServerToClientThread client=new ServerToClientThread(newUser, socket);
+			ServerToClientThread client=new ServerToClientThread(newUser, socket, clientListModel);
 			// Nouveau protocole :  On accepte la connexion.
 			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, "", ClientServerProtocol.OK, 0, "");
 			dos.writeUTF(line);
