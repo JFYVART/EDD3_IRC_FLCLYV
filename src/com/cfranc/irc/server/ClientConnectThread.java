@@ -76,11 +76,14 @@ public class ClientConnectThread extends Thread {
 		String loginUtilisateur = "";
 		String pwdUtilisateur = "";
 
+		// A la connexion, on logge l'utilisateur par défaut sur le salon
+		// général
 		int salonId = BroadcastThread.mySalons.DEFAULT_SALON_ID;
 		String salonName = BroadcastThread.mySalons.DEFAULT_SALON_NAME;
 		String msg = "";
+		String recepteur = "";
 		String line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
-				ClientServerProtocol.LOGIN_PWD, salonId, salonName);
+				ClientServerProtocol.LOGIN_PWD, salonId, salonName, recepteur);
 
 		dos.writeUTF(line);
 		while (dis.available() <= 0) {
@@ -92,9 +95,6 @@ public class ClientConnectThread extends Thread {
 		loginUtilisateur = ClientServerProtocol.decodeProtocole_Login(reponse);
 		pwdUtilisateur = ClientServerProtocol.decodeProtocole_PWD(reponse);
 
-		// A la connexion, on logge l'utilisateur par défaut sur le salon
-		// général
-
 		// On crée un objet User à partir de ces 2 informations.
 		User newUser = new User(loginUtilisateur, loginUtilisateur, salonId);
 		boolean isUserOK = authentication(newUser, salonId);
@@ -103,16 +103,19 @@ public class ClientConnectThread extends Thread {
 			ServerToClientThread client = new ServerToClientThread(newUser, socket, clientListModel);
 			// Nouveau protocole : On accepte la connexion.
 			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
-					ClientServerProtocol.OK, salonId, salonName);
+					ClientServerProtocol.OK, salonId, salonName, recepteur);
+
 			dos.writeUTF(line);
 
 			// Add user
 			if (BroadcastThread.addClient(salonId, newUser, client)) {
 				client.start();
 				clientListModel.addElement(newUser.getLogin());
+
 				// Nouveau protocole : On signale l'arrivée de cet utilisateur
 				line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
-						ClientServerProtocol.ADD, salonId, salonName);
+						ClientServerProtocol.ADD, salonId, salonName, recepteur);
+
 				dos.writeUTF(line);
 			}
 		} else {
@@ -121,7 +124,8 @@ public class ClientConnectThread extends Thread {
 			// Nouveau protocole : On refuse la connexion et on transmet une
 			// erreur.
 			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
-					ClientServerProtocol.KO, salonId, salonName);
+					ClientServerProtocol.KO, salonId, salonName, recepteur);
+
 			dos.writeUTF(line);
 			dos.close();
 			socket.close();
@@ -141,4 +145,5 @@ public class ClientConnectThread extends Thread {
 		if (server != null)
 			server.close();
 	}
+
 }

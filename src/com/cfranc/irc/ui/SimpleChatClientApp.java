@@ -2,11 +2,13 @@ package com.cfranc.irc.ui;
 
 import java.awt.Color;
 import java.awt.EventQueue;
-import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Scanner;
 
 import javax.swing.DefaultListModel;
@@ -19,8 +21,9 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
 import com.cfranc.irc.client.ClientToServerThread;
+import com.cfranc.irc.server.Salon;
 
-public class SimpleChatClientApp {
+public class SimpleChatClientApp implements Observer {
 	static String[] ConnectOptionNames = { "Connect" };
 	static String ConnectTitle = "Connection Information";
 	Socket socketClientServer;
@@ -32,6 +35,11 @@ public class SimpleChatClientApp {
 	private SimpleChatFrameClient frame;
 	public StyledDocument documentModel = new DefaultStyledDocument();
 	DefaultListModel<String> clientListModel = new DefaultListModel<String>();
+	DefaultListModel<Salon> salonListModel = new DefaultListModel<Salon>();
+
+	// HashMap pour chaque salon de ces éléments
+	// le bouton envoyer devra récupérer le salon actif pour savoir sur lequel
+	// envoyer
 
 	public static final String BOLD_ITALIC = "BoldItalic";
 	public static final String GRAY_PLAIN = "Gray";
@@ -65,13 +73,52 @@ public class SimpleChatClientApp {
 	public void displayClient() {
 
 		// Init GUI
-		this.frame = new SimpleChatFrameClient(clientToServerThread, clientListModel, documentModel);
+		this.frame = new SimpleChatFrameClient(clientToServerThread, clientListModel, documentModel, salonListModel);
 		this.frame.setTitle(
 				this.frame.getTitle() + " : " + clientName + " connected to " + serverName + ":" + serverPort);
 		((JFrame) this.frame).setVisible(true);
-		this.frame.addWindowListener(new WindowAdapter() {
+		this.frame.addWindowListener(new WindowListener() {
+
+			@Override
+			public void windowOpened(WindowEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void windowIconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void windowDeiconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+
 			public void windowClosing(WindowEvent e) {
 				quitApp(SimpleChatClientApp.this);
+			}
+
+			@Override
+			public void windowClosed(WindowEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void windowActivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+
 			}
 		});
 	}
@@ -98,8 +145,10 @@ public class SimpleChatClientApp {
 		try {
 			socketClientServer = new Socket(this.serverName, this.serverPort);
 			// Start connection services
+
 			clientToServerThread = new ClientToServerThread(documentModel, clientListModel, socketClientServer,
-					clientName, clientPwd);
+					clientName, clientPwd, salonListModel);
+
 			clientToServerThread.start();
 
 			System.out.println("Connected: " + socketClientServer);
@@ -151,5 +200,11 @@ public class SimpleChatClientApp {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void update(Observable o, Object arg) {
+		// TODO Auto-generated method stub
+
 	}
 }
