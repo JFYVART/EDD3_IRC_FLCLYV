@@ -27,6 +27,11 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 	DefaultListModel<String> clientListModel;
 	StyledDocument documentModel;
 	DefaultListModel<Salon> salonListModel;
+	// Nouveau Protocole
+	String nomRecepteur = "";
+	String commande = "";
+	int idSalon = SalonLst.DEFAULT_SALON_ID;
+	String nomSalon = SalonLst.DEFAULT_SALON_NAME;		
 
 	public ClientToServerThread(StyledDocument documentModel, DefaultListModel<String> clientListModel, Socket socket,
 			String login, String pwd, DefaultListModel<Salon> salonListModel) {
@@ -129,7 +134,9 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 		boolean res = false;
 		if (msgToSend != null) {
 			// Nouveau protocole : on envoie le message de l'utilisateur courant
-			String line = ClientServerProtocol.encodeProtocole_Ligne(login, "", msgToSend, "", 0, "");
+			commande = "";
+			pwd = "";
+			String line = ClientServerProtocol.encodeProtocole_Ligne(login, pwd, msgToSend, commande, idSalon, nomSalon, nomRecepteur);
 			streamOut.writeUTF(line);
 			msgToSend = null;
 			streamOut.flush();
@@ -140,7 +147,10 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 
 	public void quitServer() throws IOException {
 		// Nouveau protocole : On signale que l'utilisateur courant s'en va
-		String line = ClientServerProtocol.encodeProtocole_Ligne(login, "", "", ClientServerProtocol.DEL, 0, "");
+		commande = ClientServerProtocol.DEL;
+		pwd = "";
+		msgToSend = "";
+		String line = ClientServerProtocol.encodeProtocole_Ligne(login, pwd, msgToSend, commande, idSalon, nomSalon, nomRecepteur);
 		streamOut.writeUTF(line);
 		streamOut.flush();
 		done = true;
@@ -191,7 +201,9 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 			// Si la commande est une demande d'identification (Login et PWD)
 			if (commande.equals(ClientServerProtocol.LOGIN_PWD)) {
 				// On renvoie le login et pwd de la fenetre de connexion.
-				line = ClientServerProtocol.encodeProtocole_Ligne(this.login, this.pwd, "", "", 0, "");
+				this.commande = "";
+				msgToSend = "";
+				line = ClientServerProtocol.encodeProtocole_Ligne(this.login, this.pwd,msgToSend, this.commande, idSalon, nomSalon, nomRecepteur);
 				streamOut.writeUTF(line);
 			}
 			while (streamIn.available() <= 0) {

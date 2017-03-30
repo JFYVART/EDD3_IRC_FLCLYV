@@ -79,7 +79,8 @@ public class ClientConnectThread extends Thread {
 		int salonId= BroadcastThread.mySalons.DEFAULT_SALON_ID;
 		String salonName = BroadcastThread.mySalons.DEFAULT_SALON_NAME;
 		String msg = "";
-		String line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg, ClientServerProtocol.LOGIN_PWD, salonId, salonName);
+		String recepteur = "";
+		String line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg, ClientServerProtocol.LOGIN_PWD, salonId, salonName, recepteur);
 		dos.writeUTF(line);
 		while(dis.available()<=0){
 			Thread.sleep(100);
@@ -97,7 +98,7 @@ public class ClientConnectThread extends Thread {
 			
 			ServerToClientThread client=new ServerToClientThread(newUser, socket, clientListModel);
 			// Nouveau protocole :  On accepte la connexion.
-			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg, ClientServerProtocol.OK, salonId, salonName);
+			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg, ClientServerProtocol.OK, salonId, salonName, recepteur);
 			dos.writeUTF(line);
 
 			// Add user
@@ -105,14 +106,14 @@ public class ClientConnectThread extends Thread {
 				client.start();			
 				clientListModel.addElement(newUser.getLogin());
 				// Nouveau protocole : On signale l'arrivée de cet utilisateur 
-				line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg, ClientServerProtocol.ADD, salonId, salonName);
+				line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg, ClientServerProtocol.ADD, salonId, salonName, recepteur);
 				dos.writeUTF(line);
 			}
 		}
 		else{
 			System.out.println("socket.close()");
 			// Nouveau protocole :  On refuse la connexion et on transmet une erreur. 
-			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg, ClientServerProtocol.KO, salonId, salonName);
+			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg, ClientServerProtocol.KO, salonId, salonName, recepteur);
 			dos.writeUTF(line);
 			dos.close();
 			socket.close();

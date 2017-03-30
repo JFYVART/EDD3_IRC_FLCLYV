@@ -19,23 +19,23 @@ public class ClientServerProtocol {
 	public static final String NVSALON = "NVS";
 	// Un utilisateur demande la création d'un msg privé
 	public static final String NVMSGPRIVE = "MSGPRIVE";
-
+	
 	/**
 	 * Régle de communication : Tout msg doit avoir cette syntaxe
 	 * 
-	 * "#" + Login utilisateur + "#" + Password utilisateur + "#" + Msg utilisateur +"#" + commande utilisateur +"#" + IdSalon + "#" + Nom Salon
+	 * "#" + Login utilisateur (Expéditeur du msg) + "#" + Password utilisateur + "#" + Msg utilisateur +"#" + commande utilisateur +"#" + IdSalon + "#" + Nom Salon + "#" + nom de l'Utilisateur à contacter (récepteur msg privé)
 	 * 
 	 * Exemples :
 	 * 
-	 * #Toto#_#Hello tout le monde#_#0#Salon général (Toto envoit le message
+	 * #Toto#_#Hello tout le monde#_#0#Salon général#_# (Toto envoit le message
 	 * "Hello tout le monde" au salon n° 0 (Salon général))
 	 * 
-	 * #Toto#_#_#-#0#Salon général (Toto quitte le salon n° 0 (Salon général))
+	 * #Toto#_#_#-#0#Salon général#_# (Toto quitte le salon n° 0 (Salon général))
 	 * 
-	 * #Toto#_#Donald#+MSG#_#Salon privé (Toto demande la création d'un nouveau
+	 * #Toto#_#Donald#+MSG#_#Salon privé#_# (Toto demande la création d'un nouveau
 	 * salon fermé pour envoyer un message privé à Donald)
 	 * 
-	 * #Toto#_#_#+SAL#_# Salon Java (Toto demande la création d'un nouveau salon
+	 * #Toto#_#_#+SAL#_# Salon Java#_# (Toto demande la création d'un nouveau salon
 	 * public nommé "Salon Java")
 	 * 
 	 * 
@@ -88,12 +88,19 @@ public class ClientServerProtocol {
 			salonName = "";
 		return salonName;
 	}
+	
+	public static String decodeProtocole_UtilisateurRecepteur(String line) {
+		String[] userMsg = line.split(ClientServerProtocol.SEPARATOR);
+		String salonName = userMsg[7];
+		if (salonName.equals("_"))
+			salonName = "";
+		return salonName;
+	}
 
 	public static String encodeProtocole_Ligne(String login, String pwd, String msg, String command, int salonId,
-			String salonName) {
+			String salonName, String NomRecepteur) {
 		// On remplace les NULL par des chaines vides
-		if (login.equals(""))
-			login = "_";
+		if (login.equals(""))	login = "_";
 		if (pwd.equals(""))
 			pwd = "_";
 		if (msg.equals(""))
@@ -102,8 +109,11 @@ public class ClientServerProtocol {
 			command = "_";
 		if (salonName.equals(""))
 			salonName = "_";
+		if (NomRecepteur.equals(""))
+			NomRecepteur = "_";
+		
 		// Construction de la ligne
 		return SEPARATOR + login + SEPARATOR + pwd + SEPARATOR + msg + SEPARATOR + command + SEPARATOR + salonId
-				+ SEPARATOR + salonName ;
+				+ SEPARATOR + salonName + SEPARATOR + NomRecepteur + SEPARATOR;
 	}
 }

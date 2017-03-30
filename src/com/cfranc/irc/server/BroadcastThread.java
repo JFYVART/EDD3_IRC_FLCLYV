@@ -23,7 +23,12 @@ public class BroadcastThread extends Thread {
 		boolean res = true;
 		// Nouveau protocole :
 		String line;
-
+		String msg = "";
+		String commande = "";
+		String pwd = "";
+		String nomSalon = mySalons.getSalonName(idSalon);
+		String nomRecepteur = "";
+		
 		// On récupère le clientTreadsMap lié au salon
 		HashMap<User, ServerToClientThread> clientTreadsMap = createOrRetrieveClientTreadsMapByIdSalon(idSalon,user,serverToClientThread);
 		
@@ -38,8 +43,9 @@ public class BroadcastThread extends Thread {
 			for (Entry<User, ServerToClientThread> entry : clientTreadsMap.entrySet()) {
 				// Nouveau protocole : On signale à chaque Thread client
 				// l'arrivée d'un nouvel utilisateur
-				line = ClientServerProtocol.encodeProtocole_Ligne(user.getLogin(), "", "", ClientServerProtocol.ADD, 0,
-						"");
+				commande = ClientServerProtocol.ADD;
+				line = ClientServerProtocol.encodeProtocole_Ligne(user.getLogin(), pwd, msg, commande, idSalon,
+						nomSalon, nomRecepteur);
 				entry.getValue().post(line);
 			}
 
@@ -48,15 +54,15 @@ public class BroadcastThread extends Thread {
 			for (Entry<User, ServerToClientThread> entry : clientTreadsMap.entrySet()) {
 				// Nouveau protocole : On signale au nouvel arrivant les
 				// utilisateurs existants
-				line = ClientServerProtocol.encodeProtocole_Ligne(entry.getKey().getLogin(), "", "",
-						ClientServerProtocol.ADD, 0, "");
+				line = ClientServerProtocol.encodeProtocole_Ligne(entry.getKey().getLogin(), pwd, msg,
+						ClientServerProtocol.ADD, idSalon, nomSalon, nomRecepteur);
 				serverToClientThread.post(line);
 			}
 		}
 		return res;
 	}
 
-	public static void sendMessage(User sender, String pwd, String msg, String command, int idSalon, String nomSalon) {
+	public static void sendMessage(User sender, String pwd, String msg, String command, int idSalon, String nomSalon, String recepteur) {
 		// Nouveau protocole :
 		String line;
 		// On récupère le clientTreadsMap lié au salon
@@ -67,18 +73,18 @@ public class BroadcastThread extends Thread {
 			ServerToClientThread clientThread = (ServerToClientThread) receiverClientThreadIterator.next();
 			// Nouveau protocole : On envoie le message en précisant le login et
 			// le msg
-			line = ClientServerProtocol.encodeProtocole_Ligne(sender.getLogin(), pwd, msg, command, idSalon, nomSalon);
+			line = ClientServerProtocol.encodeProtocole_Ligne(sender.getLogin(), pwd, msg, command, idSalon, nomSalon, recepteur);
 			clientThread.post(line);
 			System.out.println("sendMessage : " + "#" + sender.getLogin() + "#" + msg);
 		}
 	}
 
 	
-	public static void createNewSalon(User user, String pwd, String msg, String commande, int idSalon, String nomSalon){
+	public static void createNewSalon(User user, String pwd, String msg, String commande, int idSalon, String nomSalon, String recepteur){
 		// on cree le nouveau salon
 		idSalon = mySalons.createOrRetrieveSalon(nomSalon, SalonLst.DEFAULT_SALON_NOT_PRIVACY);
 		// on renvoie le message avec l'idSalon
-		sendMessage(user,pwd,msg,commande,idSalon,nomSalon);
+		sendMessage(user,pwd,msg,commande,idSalon,nomSalon, recepteur);
 	}
 	
 	public static void removeClient(User user, int idSalon) {
