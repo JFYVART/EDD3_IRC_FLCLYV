@@ -7,6 +7,7 @@ public class SalonLst  {
 	public static final String DEFAULT_SALON_NAME = "Général";
 	public static final int DEFAULT_SALON_ID = 0;
 	public static final boolean DEFAULT_SALON_NOT_PRIVACY = false;
+	public static final boolean DEFAULT_SALON_PRIVACY = true;
 	
 	private ArrayList <Salon> lstSalons; // list des salons
 	

@@ -94,6 +94,10 @@ public class ServerToClientThread extends Thread {
 						case ClientServerProtocol.NVSALON: // L'utilisateur veut créer un nouveau salon
 							BroadcastThread.createNewSalon(user, pwd, msg, commande, idSalon, nomSalon, nomRecepteur);
 							break;
+						
+						case ClientServerProtocol.NVMSGPRIVE: // L'utilisateur veut envoyer un msg privé
+							BroadcastThread.createMsgPrive(user, pwd, msg, commande, idSalon, nomSalon, nomRecepteur);
+							break;	
 							
 						default: // Défaut = diffusion de message texte
 							if (login.equals(user)) {
