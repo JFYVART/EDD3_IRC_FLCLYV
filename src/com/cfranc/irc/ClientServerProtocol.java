@@ -27,15 +27,15 @@ public class ClientServerProtocol {
 	 * 
 	 * Exemples :
 	 * 
-	 * #Toto##Hello tout le monde##0#Salon général (Toto envoit le message
+	 * #Toto#_#Hello tout le monde#_#0#Salon général (Toto envoit le message
 	 * "Hello tout le monde" au salon n° 0 (Salon général))
 	 * 
-	 * #Toto###-#0#Salon général (Toto quitte le salon n° 0 (Salon général))
+	 * #Toto#_#_#-#0#Salon général (Toto quitte le salon n° 0 (Salon général))
 	 * 
-	 * #Toto##Donald#+MSG##Salon privé (Toto demande la création d'un nouveau
+	 * #Toto#_#Donald#+MSG#_#Salon privé (Toto demande la création d'un nouveau
 	 * salon fermé pour envoyer un message privé à Donald)
 	 * 
-	 * #Toto###+SAL## Salon Java (Toto demande la création d'un nouveau salon
+	 * #Toto#_#_#+SAL#_# Salon Java (Toto demande la création d'un nouveau salon
 	 * public nommé "Salon Java")
 	 * 
 	 * 
@@ -44,7 +44,7 @@ public class ClientServerProtocol {
 	public static String decodeProtocole_Login(String line) {
 		String[] userMsg = line.split(ClientServerProtocol.SEPARATOR);
 		String login = userMsg[1];
-		if (login == null)
+		if (login.equals("_"))
 			login = "";
 		return login;
 	}
@@ -52,7 +52,7 @@ public class ClientServerProtocol {
 	public static String decodeProtocole_PWD(String line) {
 		String[] userMsg = line.split(ClientServerProtocol.SEPARATOR);
 		String pwd = userMsg[2];
-		if (pwd == null)
+		if (pwd.equals("_"))
 			pwd = "";
 		return pwd;
 	}
@@ -60,7 +60,7 @@ public class ClientServerProtocol {
 	public static String decodeProtocole_Message(String line) {
 		String[] userMsg = line.split(ClientServerProtocol.SEPARATOR);
 		String msg = userMsg[3];
-		if (msg == null)
+		if (msg.equals("_"))
 			msg = "";
 		return msg;
 	}
@@ -68,7 +68,7 @@ public class ClientServerProtocol {
 	public static String decodeProtocole_Command(String line) {
 		String[] userMsg = line.split(ClientServerProtocol.SEPARATOR);
 		String command = userMsg[4];
-		if (command == null)
+		if (command.equals("_"))
 			command = "";
 		return command;
 	}
@@ -76,7 +76,7 @@ public class ClientServerProtocol {
 	public static int decodeProtocole_IdSalon(String line) {
 		String[] userMsg = line.split(ClientServerProtocol.SEPARATOR);
 		String idSalonString = userMsg[5];
-		if (idSalonString == null)
+		if (idSalonString.equals("_"))
 			idSalonString = "0";
 		return Integer.parseInt(idSalonString);
 	}
@@ -84,7 +84,7 @@ public class ClientServerProtocol {
 	public static String decodeProtocole_NomSalon(String line) {
 		String[] userMsg = line.split(ClientServerProtocol.SEPARATOR);
 		String salonName = userMsg[6];
-		if (salonName == null)
+		if (salonName.equals("_"))
 			salonName = "";
 		return salonName;
 	}
@@ -92,18 +92,18 @@ public class ClientServerProtocol {
 	public static String encodeProtocole_Ligne(String login, String pwd, String msg, String command, int salonId,
 			String salonName) {
 		// On remplace les NULL par des chaines vides
-		if (login == null)
-			login = "";
-		if (pwd == null)
-			pwd = "";
-		if (msg == null)
-			msg = "";
-		if (command == null)
-			command = "";
-		if (salonName == null)
-			salonName = "";
+		if (login.equals(""))
+			login = "_";
+		if (pwd.equals(""))
+			pwd = "_";
+		if (msg.equals(""))
+			msg = "_";
+		if (command.equals(""))
+			command = "_";
+		if (salonName.equals(""))
+			salonName = "_";
 		// Construction de la ligne
 		return SEPARATOR + login + SEPARATOR + pwd + SEPARATOR + msg + SEPARATOR + command + SEPARATOR + salonId
-				+ SEPARATOR + salonName;
+				+ SEPARATOR + salonName ;
 	}
 }

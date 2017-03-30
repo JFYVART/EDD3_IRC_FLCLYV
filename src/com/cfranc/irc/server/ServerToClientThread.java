@@ -17,7 +17,8 @@ public class ServerToClientThread extends Thread {
 	private Socket socket = null;
 	private DataInputStream streamIn = null;
 	private DataOutputStream streamOut = null;
-	private DefaultListModel<String> clientListModel = null;
+
+	private DefaultListModel<String> clientListModel;
 
 	public ServerToClientThread(User user, Socket socket, DefaultListModel<String> clientListModel) {
 		super();
@@ -72,30 +73,42 @@ public class ServerToClientThread extends Thread {
 						String login = ClientServerProtocol.decodeProtocole_Login(line);
 						String msg = ClientServerProtocol.decodeProtocole_Message(line);
 						String commande = ClientServerProtocol.decodeProtocole_Command(line);
-						// Si la commande = DEL => on arrete
-						done = commande.equals(ClientServerProtocol.DEL);
-						if (!done) {
-							if (login.equals(user)) {
-								System.err.println(commande + "ServerToClientThread::run(), login!=user" + login);
-							}
-							BroadcastThread.sendMessage(user, msg, commande);
-						} else {
-							// Message de départ de l'utilisateur
-							BroadcastThread.sendMessage(user, msg, commande);
+						String pwd = ClientServerProtocol.decodeProtocole_PWD(line);
+						String nomSalon = ClientServerProtocol.decodeProtocole_NomSalon(line);
+						int idSalon = ClientServerProtocol.decodeProtocole_IdSalon(line);
 
-							// Envoi du message au client
-							// line =
-							// ClientServerProtocol.encodeProtocole_Ligne(user.getLogin(),
-							// "", "",
-							// ClientServerProtocol.OK, 0, "");
-							// streamOut.writeUTF(line);
-
-							// Suppression de l'utilisateur
-							BroadcastThread.removeClient(user);
-
+						// Analyse et traitement de la ligne reçue : On se base
+						// sur la nature de la commande pour déterminer le
+						// travail à faire
+						switch (commande) {
+						case ClientServerProtocol.DEL: // L'utilisateur veut
+														// quitter le chat.
+							done = true;
+							// On informes les IHM clients qu'un utilisateur
+							// s'en va
+							BroadcastThread.sendMessage(user, pwd, msg, commande, idSalon, nomSalon);
+							// On supprime l'utilisateur de la liste des
+							// Utilisateur du salon
+							BroadcastThread.removeClient(user, idSalon);
+							// Suppression de l'utilisateur de la liste des
+							// utilisateurs connectés (IHM Serveur)
 							clientListModel.removeElement(user.getLogin());
-							// SimpleChatServerApp.getClientListModel().removeElement(user.getLogin());
+							break;
+
+						case ClientServerProtocol.NVSALON: // L'utilisateur veut
+															// créer un nouveau
+															// salon
+							BroadcastThread.createNewSalon(user, pwd, msg, commande, idSalon, nomSalon);
+							break;
+
+						default: // Défaut = diffusion de message texte
+							if (login.equals(user)) {
+								System.err.println("ServerToClientThread::run(), login!=user" + login);
+							}
+							BroadcastThread.sendMessage(user, pwd, msg, commande, idSalon, nomSalon);
+							break;
 						}
+
 					} else {
 						doPost();
 					}

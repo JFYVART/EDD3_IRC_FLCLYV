@@ -17,6 +17,7 @@ public class ClientConnectThread extends Thread {
 	DefaultListModel<String> clientListModel;
 
 	private boolean canStop = false;
+
 	private ServerSocket server = null;
 
 	private void printMsg(String msg) {
@@ -31,12 +32,14 @@ public class ClientConnectThread extends Thread {
 		}
 	}
 
-	public ClientConnectThread(int port, StyledDocument model, DefaultListModel<String> clientListModel) {
+	public ClientConnectThread(int port, StyledDocument model, DefaultListModel<String> clientListModel,
+			SalonLst mySalons) {
 		try {
 			this.model = model;
 			this.clientListModel = clientListModel;
 			printMsg("Binding to port " + port + ", please wait  ...");
 			server = new ServerSocket(port);
+			BroadcastThread.mySalons = mySalons;
 			printMsg("Server started: " + server);
 		} catch (IOException ioe) {
 			System.out.println(ioe);
@@ -72,8 +75,13 @@ public class ClientConnectThread extends Thread {
 		// Nouveau protocole : On demande le login et pwd
 		String loginUtilisateur = "";
 		String pwdUtilisateur = "";
-		String line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, "",
-				ClientServerProtocol.LOGIN_PWD, 0, "");
+
+		int salonId = BroadcastThread.mySalons.DEFAULT_SALON_ID;
+		String salonName = BroadcastThread.mySalons.DEFAULT_SALON_NAME;
+		String msg = "";
+		String line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
+				ClientServerProtocol.LOGIN_PWD, salonId, salonName);
+
 		dos.writeUTF(line);
 		while (dis.available() <= 0) {
 			Thread.sleep(100);
@@ -83,41 +91,46 @@ public class ClientConnectThread extends Thread {
 		// Nouveau protocole : on lit le login et pwd retournés par le client
 		loginUtilisateur = ClientServerProtocol.decodeProtocole_Login(reponse);
 		pwdUtilisateur = ClientServerProtocol.decodeProtocole_PWD(reponse);
-		int salonUser = 0;
+
+		// A la connexion, on logge l'utilisateur par défaut sur le salon
+		// général
+
 		// On crée un objet User à partir de ces 2 informations.
-		User newUser = new User(loginUtilisateur, loginUtilisateur, salonUser);
-		boolean isUserOK = authentication(newUser);
+		User newUser = new User(loginUtilisateur, loginUtilisateur, salonId);
+		boolean isUserOK = authentication(newUser, salonId);
 		if (isUserOK) {
 
 			ServerToClientThread client = new ServerToClientThread(newUser, socket, clientListModel);
 			// Nouveau protocole : On accepte la connexion.
-			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, "",
-					ClientServerProtocol.OK, 0, "");
+			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
+					ClientServerProtocol.OK, salonId, salonName);
 			dos.writeUTF(line);
 
 			// Add user
-			if (BroadcastThread.addClient(newUser, client)) {
+			if (BroadcastThread.addClient(salonId, newUser, client)) {
 				client.start();
 				clientListModel.addElement(newUser.getLogin());
 				// Nouveau protocole : On signale l'arrivée de cet utilisateur
-				line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, "",
-						ClientServerProtocol.ADD, 0, "");
+				line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
+						ClientServerProtocol.ADD, salonId, salonName);
 				dos.writeUTF(line);
 			}
 		} else {
 			System.out.println("socket.close()");
+
 			// Nouveau protocole : On refuse la connexion et on transmet une
 			// erreur.
-			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, "",
-					ClientServerProtocol.KO, 0, "");
+			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
+					ClientServerProtocol.KO, salonId, salonName);
 			dos.writeUTF(line);
 			dos.close();
 			socket.close();
 		}
 	}
 
-	private boolean authentication(User newUser) {
-		return BroadcastThread.accept(newUser);
+	private boolean authentication(User newUser, int idsalon) {
+		return BroadcastThread.accept(newUser, idsalon);
+
 	}
 
 	public void open() throws IOException {

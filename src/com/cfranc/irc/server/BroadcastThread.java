@@ -10,15 +10,26 @@ import com.cfranc.irc.ClientServerProtocol;
 
 public class BroadcastThread extends Thread {
 
-	public static HashMap<User, ServerToClientThread> clientTreadsMap = new HashMap<User, ServerToClientThread>();
+	// public static HashMap<User, ServerToClientThread> clientTreadsMap=new
+	// HashMap<User, ServerToClientThread>();
+	public static HashMap<Integer, HashMap<User, ServerToClientThread>> salon_ClientTreadsMap = new HashMap<Integer, HashMap<User, ServerToClientThread>>();
+	public static SalonLst mySalons;
+
 	static {
-		Collections.synchronizedMap(clientTreadsMap);
+		Collections.synchronizedMap(salon_ClientTreadsMap);
 	}
 
-	public static boolean addClient(User user, ServerToClientThread serverToClientThread) {
+	public static boolean addClient(int idSalon, User user, ServerToClientThread serverToClientThread) {
 		boolean res = true;
 		// Nouveau protocole :
 		String line;
+
+		// On récupère le clientTreadsMap lié au salon
+		HashMap<User, ServerToClientThread> clientTreadsMap = createOrRetrieveClientTreadsMapByIdSalon(idSalon, user,
+				serverToClientThread);
+
+		// On voit si c'est un nouveau salon
+
 		if (clientTreadsMap.containsKey(user)) {
 			res = false;
 		} else {
@@ -36,7 +47,9 @@ public class BroadcastThread extends Thread {
 			clientTreadsMap.put(user, serverToClientThread);
 
 			for (Entry<User, ServerToClientThread> entry : clientTreadsMap.entrySet()) {
-				// Nouveau protocole : On signale au nouveal arrivant les
+
+				// Nouveau protocole : On signale au nouvel arrivant les
+
 				// utilisateurs existants
 				line = ClientServerProtocol.encodeProtocole_Ligne(entry.getKey().getLogin(), "", "",
 						ClientServerProtocol.ADD, 0, "");
@@ -46,9 +59,11 @@ public class BroadcastThread extends Thread {
 		return res;
 	}
 
-	public static void sendMessage(User sender, String msg, String commande) {
+	public static void sendMessage(User sender, String pwd, String msg, String command, int idSalon, String nomSalon) {
 		// Nouveau protocole :
 		String line;
+		// On récupère le clientTreadsMap lié au salon
+		HashMap<User, ServerToClientThread> clientTreadsMap = getClientTreadsMap(idSalon);
 
 		Collection<ServerToClientThread> clientTreads = clientTreadsMap.values();
 		Iterator<ServerToClientThread> receiverClientThreadIterator = clientTreads.iterator();
@@ -56,21 +71,87 @@ public class BroadcastThread extends Thread {
 			ServerToClientThread clientThread = (ServerToClientThread) receiverClientThreadIterator.next();
 			// Nouveau protocole : On envoie le message en précisant le login et
 			// le msg
-			line = ClientServerProtocol.encodeProtocole_Ligne(sender.getLogin(), "", msg, commande, 0, "");
+
+			line = ClientServerProtocol.encodeProtocole_Ligne(sender.getLogin(), pwd, msg, command, idSalon, nomSalon);
+
 			clientThread.post(line);
 			System.out.println("sendMessage : " + "#" + sender.getLogin() + "#" + msg);
 		}
 	}
 
-	public static void removeClient(User user) {
-		clientTreadsMap.remove(user);
+	public static void createNewSalon(User user, String pwd, String msg, String commande, int idSalon,
+			String nomSalon) {
+		// on cree le nouveau salon
+		idSalon = mySalons.createOrRetrieveSalon(nomSalon, SalonLst.DEFAULT_SALON_NOT_PRIVACY);
+		// on renvoie le message avec l'idSalon
+		sendMessage(user, pwd, msg, commande, idSalon, nomSalon);
 	}
 
-	public static boolean accept(User user) {
+	public static void removeClient(User user, int idSalon) {
+		// On récupère le clientTreadsMap lié au salon
+		HashMap<User, ServerToClientThread> clientTreadsMap = getClientTreadsMap(idSalon);
+		clientTreadsMap.remove(user);
+
+	}
+
+	public static boolean accept(User user, int idSalon) {
 		boolean res = true;
+		// On récupère le clientTreadsMap lié au salon
+		HashMap<User, ServerToClientThread> clientTreadsMap = getClientTreadsMap(idSalon);
 		if (clientTreadsMap.containsKey(user)) {
 			res = false;
 		}
 		return res;
+	}
+
+	/**
+	 * Recherche si il existe un HashMap<User, ServerToClientThread>
+	 * correspondant à l'idSalon S'il existe, on le retourne tel quel Sinon on
+	 * le crée en rajoutant le user et son serverToClientThread
+	 * 
+	 * @param idSalon
+	 * @param user
+	 * @param serverToClientThread
+	 * @return
+	 */
+	public static HashMap<User, ServerToClientThread> createOrRetrieveClientTreadsMapByIdSalon(int idSalon, User user,
+			ServerToClientThread serverToClientThread) {
+		// Par défaut on crée un nouveau HashMap<User, ServerToClientThread>
+		HashMap<User, ServerToClientThread> clientTreadsMap = new HashMap<User, ServerToClientThread>();
+
+		// Si un HashMap<User, ServerToClientThread> correspond à l'idSalon, on
+		// le retourne, sinon ce sera le nouveau HashMap<User,
+		// ServerToClientThread> qui sera retourné
+		if (salon_ClientTreadsMap.containsKey(idSalon)) {
+			clientTreadsMap = salon_ClientTreadsMap.get(idSalon);
+		} else // On ajoute le idsalon et le Thread au nouveau HashMap<User,
+				// ServerToClientThread>
+		{
+			salon_ClientTreadsMap.put(new Integer(idSalon), clientTreadsMap);
+		}
+
+		return clientTreadsMap;
+	}
+
+	/**
+	 * Retourne le HashMap<User, ServerToClientThread> correspondant au salon On
+	 * part du principe que ce HashMap existe !!!
+	 * 
+	 * @param idSalon
+	 * @return
+	 */
+	public static HashMap<User, ServerToClientThread> getClientTreadsMap(int idSalon) {
+		// Par défaut on crée un nouveau HashMap<User, ServerToClientThread>
+		HashMap<User, ServerToClientThread> clientTreadsMap = new HashMap<User, ServerToClientThread>();
+
+		// Si un HashMap<User, ServerToClientThread> correspond à l'idSalon, on
+		// le retourne
+
+		// sinon ce sera le nouveau HashMap<User, ServerToClientThread> qui sera
+		// retourné
+		if (salon_ClientTreadsMap.containsKey(idSalon)) {
+			clientTreadsMap = salon_ClientTreadsMap.get(idSalon);
+		}
+		return clientTreadsMap;
 	}
 }
