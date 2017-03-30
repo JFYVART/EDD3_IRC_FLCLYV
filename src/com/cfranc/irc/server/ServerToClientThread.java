@@ -84,8 +84,8 @@ public class ServerToClientThread extends Thread {
 							// s'en va
 							BroadcastThread.sendMessage(user, pwd, msg, commande, idSalon, nomSalon, nomRecepteur);
 							// On supprime l'utilisateur de la liste des
-							// Utilisateur du salon
-							BroadcastThread.removeClient(user, idSalon);
+							// Utilisateurs
+							BroadcastThread.removeClient(user);
 							// Suppression de l'utilisateur de la liste des
 							// utilisateurs connectés (IHM Serveur)
 							clientListModel.removeElement(user.getLogin());
@@ -98,6 +98,10 @@ public class ServerToClientThread extends Thread {
 						case ClientServerProtocol.NVMSGPRIVE: // L'utilisateur veut envoyer un msg privé
 							BroadcastThread.createMsgPrive(user, pwd, msg, commande, idSalon, nomSalon, nomRecepteur);
 							break;	
+						
+						case ClientServerProtocol.QUITSALON	: // L'utilisateur veut quitter un salon donné
+							BroadcastThread.removeClientFromSalon(user, pwd, msg, commande, idSalon, nomSalon, nomRecepteur);
+							break;
 							
 						default: // Défaut = diffusion de message texte
 							if (login.equals(user)) {

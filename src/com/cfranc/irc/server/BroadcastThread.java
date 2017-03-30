@@ -100,6 +100,8 @@ public class BroadcastThread extends Thread {
 		// on renvoie le message avec l'idSalon à tout le monde
 		broadCastMessage(user,pwd,msg,commande,idSalon,nomSalon, recepteur);
 	}
+	
+	
 	/***
 	 * Gestion d'une demande de création d'un salon privé avec deux utilisateurs (pour envoyer des messages privés) 
 	 * @param user
@@ -139,11 +141,22 @@ public class BroadcastThread extends Thread {
 	}
 	
 	
-	public static void removeClient(User user, int idSalon) {
+	public static void removeClientFromSalon(User user, String pwd, String msg, String commande, int idSalon, String nomSalon, String recepteur){
 		// On récupère le clientTreadsMap lié au salon
 		HashMap<User, ServerToClientThread> clientTreadsMap = getClientTreadsMap(idSalon);
+		// on supprime le User du clientTreadsMap
 		clientTreadsMap.remove(user);
-
+		// On envoie le message à tout le monde pour que chaun mette à jour son IHM
+		broadCastMessage(user,pwd,msg,commande,idSalon,nomSalon, recepteur);
+		
+	}
+	
+	public static void removeClient(User user) {
+		// On parcoure tous les clientTreadsMap (salon) pour supprimer le USER  
+		
+		// On récupère le clientTreadsMap lié au salon
+		//HashMap<User, ServerToClientThread> clientTreadsMap = getClientTreadsMap(idSalon);
+		//clientTreadsMap.remove(user);
 	}
 
 	public static boolean accept(User user, int idSalon) {

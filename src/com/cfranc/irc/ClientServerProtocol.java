@@ -13,12 +13,14 @@ public class ClientServerProtocol {
 	public static final String OK = "OK";
 	// Un nouvel utilisateur arrive dans un salon
 	public static final String ADD = "+";
-	// Un utilisateur quitte un salon 
+	// Un utilisateur quitte le logiciel 
 	public static final String DEL = "-";
 	// Un utilisateur demande la création d'un nouveau salon
 	public static final String NVSALON = "NVS";
 	// Un utilisateur demande la création d'un msg privé
 	public static final String NVMSGPRIVE = "MSGPRIVE";
+	// Un utilisateur quitte un salon 
+	public static final String QUITSALON = "QSAL";
 	
 	/**
 	 * Régle de communication : Tout msg doit avoir cette syntaxe
