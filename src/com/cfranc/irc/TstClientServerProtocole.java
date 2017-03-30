@@ -104,11 +104,11 @@ public class TstClientServerProtocole {
 		String msg = "";
 		String command = "";
 		int salonId = 0;
-		String salonName = "Salon Général";
-		String recepteur = "";
+		String salonName = "";
+		String recepteur = "Titi";
 		
 		line = ClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName, recepteur);
-		assertEquals(salonName,ClientServerProtocol.decodeProtocole_UtilisateurRecepteur(line));
+		assertEquals(recepteur,ClientServerProtocol.decodeProtocole_UtilisateurRecepteur(line));
 	}
 	
 	@Test
@@ -171,4 +171,18 @@ public class TstClientServerProtocole {
 		assertEquals(command,ClientServerProtocol.decodeProtocole_Command(line));
 	}
 	
+	@Test
+	public void test_encodeProtocole_Ligne_Recepteur_Vide() {
+		String line = "";
+		String login ="";
+		String pwd = "";  
+		String msg = "";
+		String command = "";
+		int salonId = 0;
+		String salonName = "Salon Général";
+		String recepteur = "";
+		
+		line = ClientServerProtocol.encodeProtocole_Ligne(login, pwd, msg, command, salonId, salonName, recepteur);
+		assertEquals(recepteur,ClientServerProtocol.decodeProtocole_UtilisateurRecepteur(line));
+	}
 }
