@@ -20,7 +20,7 @@ public class ClientServerProtocol {
 	// Un utilisateur demande la création d'un msg privé
 	public static final String NVMSGPRIVE = "MSGPRIVE";
 	// Un utilisateur quitte un salon 
-	public static final String QUITSALON = "QSAL";
+	public static final String QUITSALON = "QSAL" ;
 	
 	/**
 	 * Régle de communication : Tout msg doit avoir cette syntaxe
