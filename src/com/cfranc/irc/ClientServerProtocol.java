@@ -25,7 +25,7 @@ public class ClientServerProtocol {
 	/**
 	 * Régle de communication : Tout msg doit avoir cette syntaxe
 	 * 
-	 * "#" + Login utilisateur (Expéditeur du msg) + "#" + Password utilisateur + "#" + Msg utilisateur +"#" + commande utilisateur +"#" + IdSalon + "#" + Nom Salon + "#" + nom de l'Utilisateur à contacter (récepteur msg privé)
+	 * "#" + Login utilisateur (Expéditeur du msg) + "#" + Password utilisateur + "#" + Msg utilisateur +"#" + commande utilisateur +"#" + IdSalon + "#" + Nom Salon + "#" + nom de l'Utilisateur à contacter (récepteur msg privé) + "#" + idNewSalon
 	 * 
 	 * Exemples :
 	 * 
@@ -98,15 +98,24 @@ public class ClientServerProtocol {
 			salonName = "";
 		return salonName;
 	}
+	
+	public static int decodeProtocole_Nouveausalon(String line) {
+		String[] userMsg = line.split(ClientServerProtocol.SEPARATOR);
+		String idSalonName = userMsg[8];
+		if (idSalonName.equals("_"))
+			idSalonName = "0";
+		return Integer.parseInt(idSalonName);
+	}
 
 	public static String encodeProtocole_Ligne(String login, String pwd, String msg, String command, int salonId,
-			String salonName, String NomRecepteur) {
+			String salonName, String NomRecepteur, int newSalonId) {
 		// On remplace les NULL par des chaines vides
 		if (login.equals(""))	login = "_";
 		if (pwd.equals(""))
 			pwd = "_";
-		if (msg.equals(""))
-			msg = "_";
+		if (msg != null){
+			if (msg.equals(""))	msg = "_";
+		} else 	msg = "_";
 		if (command.equals(""))
 			command = "_";
 		if (salonName.equals(""))
@@ -116,6 +125,6 @@ public class ClientServerProtocol {
 		
 		// Construction de la ligne
 		return SEPARATOR + login + SEPARATOR + pwd + SEPARATOR + msg + SEPARATOR + command + SEPARATOR + salonId
-				+ SEPARATOR + salonName + SEPARATOR + NomRecepteur + SEPARATOR;
+				+ SEPARATOR + salonName + SEPARATOR + NomRecepteur + SEPARATOR + newSalonId+ SEPARATOR;
 	}
 }

@@ -21,7 +21,7 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
 import com.cfranc.irc.client.ClientToServerThread;
-import com.cfranc.irc.server.Salon;
+import com.cfranc.irc.client.DefaultListSalonModel;
 
 public class SimpleChatClientApp implements Observer {
 	static String[] ConnectOptionNames = { "Connect" };
@@ -35,7 +35,7 @@ public class SimpleChatClientApp implements Observer {
 	private SimpleChatFrameClient frame;
 	public StyledDocument documentModel = new DefaultStyledDocument();
 	DefaultListModel<String> clientListModel = new DefaultListModel<String>();
-	DefaultListModel<Salon> salonListModel = new DefaultListModel<Salon>();
+	DefaultListSalonModel salonListModel = new DefaultListSalonModel();
 
 	// HashMap pour chaque salon de ces éléments
 	// le bouton envoyer devra récupérer le salon actif pour savoir sur lequel

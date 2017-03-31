@@ -82,8 +82,9 @@ public class ClientConnectThread extends Thread {
 		String salonName = BroadcastThread.mySalons.DEFAULT_SALON_NAME;
 		String msg = "";
 		String recepteur = "";
+		int nouveauIdSalon = BroadcastThread.mySalons.DEFAULT_SALON_ID;
 		String line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
-				ClientServerProtocol.LOGIN_PWD, salonId, salonName, recepteur);
+				ClientServerProtocol.LOGIN_PWD, salonId, salonName, recepteur, nouveauIdSalon);
 
 		dos.writeUTF(line);
 		while (dis.available() <= 0) {
@@ -94,7 +95,6 @@ public class ClientConnectThread extends Thread {
 		// Nouveau protocole : on lit le login et pwd retournés par le client
 		loginUtilisateur = ClientServerProtocol.decodeProtocole_Login(reponse);
 		pwdUtilisateur = ClientServerProtocol.decodeProtocole_PWD(reponse);
-
 		// On crée un objet User à partir de ces 2 informations.
 		User newUser = new User(loginUtilisateur, loginUtilisateur, salonId);
 		boolean isUserOK = authentication(newUser, salonId);
@@ -103,7 +103,7 @@ public class ClientConnectThread extends Thread {
 			ServerToClientThread client = new ServerToClientThread(newUser, socket, clientListModel);
 			// Nouveau protocole : On accepte la connexion.
 			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
-					ClientServerProtocol.OK, salonId, salonName, recepteur);
+					ClientServerProtocol.OK, salonId, salonName, recepteur, nouveauIdSalon);
 
 			dos.writeUTF(line);
 
@@ -114,7 +114,7 @@ public class ClientConnectThread extends Thread {
 
 				// Nouveau protocole : On signale l'arrivée de cet utilisateur
 				line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
-						ClientServerProtocol.ADD, salonId, salonName, recepteur);
+						ClientServerProtocol.ADD, salonId, salonName, recepteur, nouveauIdSalon);
 
 				dos.writeUTF(line);
 			}
@@ -124,7 +124,7 @@ public class ClientConnectThread extends Thread {
 			// Nouveau protocole : On refuse la connexion et on transmet une
 			// erreur.
 			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
-					ClientServerProtocol.KO, salonId, salonName, recepteur);
+					ClientServerProtocol.KO, salonId, salonName, recepteur, nouveauIdSalon);
 
 			dos.writeUTF(line);
 			dos.close();

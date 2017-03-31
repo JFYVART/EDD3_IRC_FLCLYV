@@ -5,7 +5,6 @@ import java.awt.Choice;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
@@ -50,10 +49,15 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.Style;
 import javax.swing.text.StyledDocument;
 
+import com.cfranc.irc.ClientServerProtocol;
+import com.cfranc.irc.client.DefaultListSalonModel;
+import com.cfranc.irc.client.EventSalonADD;
+import com.cfranc.irc.client.EventSalonSUPPR;
 import com.cfranc.irc.client.IfSenderModel;
 import com.cfranc.irc.server.Salon;
 import com.cfranc.irc.server.SalonLst;
@@ -62,7 +66,7 @@ public class SimpleChatFrameClient extends JFrame {
 
 	private static Document documentModel;
 	private static ListModel<String> listModel;
-	private static DefaultListModel<Salon> salonListModel;
+	private DefaultListSalonModel salonListModel;
 	IfSenderModel sender;
 	private String senderName;
 
@@ -70,7 +74,10 @@ public class SimpleChatFrameClient extends JFrame {
 	private JPanel panelPiedPage;
 	private JTextField textField;
 	private JLabel lblSender;
+	private JTabbedPane tabbedPaneSalon;
 	private final ResourceAction sendAction = new SendAction();
+	private final ResourceAction newSalondAction = new NewSalonAction();
+	private final ResourceAction closeSalonAction = new CloseSalonAction();
 	private final ResourceAction lockAction = new LockAction();
 
 	private boolean isScrollLocked = true;
@@ -111,13 +118,27 @@ public class SimpleChatFrameClient extends JFrame {
 		}
 	}
 
-	public void sendMessage() {
-		sender.setMsgToSend(textField.getText());
+	public void sendMessage(int actionToPerform) {
+		switch (actionToPerform) {
+		case 0:// On envoie un message
+			sender.setMsgToSend(textField.getText(), 0,"", "","");
+			break;
+		case 1:// On veut un nouveau salon
+			sender.setMsgToSend("Création d'un salon", 0,"Nouveau Salon",ClientServerProtocol.NVSALON,"");
+			break;
+
+		case 2:// On ferme le salon
+			sender.setMsgToSend("Fermeture du salon",0,"",ClientServerProtocol.QUITSALON,"");
+			break;	
+		default:
+			break;
+		} 
+		
 	}
 
 	public SimpleChatFrameClient() {
 		this(null, new DefaultListModel<String>(), SimpleChatClientApp.defaultDocumentModel(),
-				new DefaultListModel<Salon>());
+				new DefaultListSalonModel());
 	}
 
 	/**
@@ -125,11 +146,12 @@ public class SimpleChatFrameClient extends JFrame {
 	 */
 
 	public SimpleChatFrameClient(IfSenderModel sender, ListModel<String> clientListModel, Document documentModel,
-			DefaultListModel<Salon> salonListModel) {
+			DefaultListSalonModel salonListModel) {
 		this.sender = sender;
 		this.documentModel = documentModel;
 		this.listModel = clientListModel;
 		this.salonListModel = salonListModel;
+		this.salonListModel.addObserver(this);
 
 		setTitle(Messages.getString("SimpleChatFrameClient.4")); //$NON-NLS-1$
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -150,7 +172,7 @@ public class SimpleChatFrameClient extends JFrame {
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
 
-		JTabbedPane tabbedPaneSalon = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPaneSalon = new JTabbedPane(JTabbedPane.TOP);
 
 		// tabbedPaneSalon.setToolTipText(Messages.getString("SimpleChatFrameClient.tabbedPane.toolTipText"));
 		// //$NON-NLS-1$
@@ -305,7 +327,7 @@ public class SimpleChatFrameClient extends JFrame {
 		 * Ouvrir fenêtre création salon
 		 */
 		JMenuItem mntmCreateSalon = new JMenuItem(Messages.getString("SimpleChatFrameClient.mntmCrerUnNouveau.text")); //$NON-NLS-1$
-		mnSalon.add(mntmCreateSalon);
+		
 		mntmCreateSalon.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusGained(FocusEvent e) {
@@ -317,7 +339,11 @@ public class SimpleChatFrameClient extends JFrame {
 			}
 		});
 
+		mntmCreateSalon.setAction(newSalondAction);
+		mnSalon.add(mntmCreateSalon);
+		
 		JMenuItem mntmFermerSalon = new JMenuItem(Messages.getString("SimpleChatFrameClient.mntmNewMenuItem.text")); //$NON-NLS-1$
+		mntmFermerSalon.setAction(closeSalonAction);
 		mnSalon.add(mntmFermerSalon);
 	}
 
@@ -366,10 +392,42 @@ public class SimpleChatFrameClient extends JFrame {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			sendMessage();
+			sendMessage(0);
 		}
 	}
 
+	private class NewSalonAction extends ResourceAction {
+		private Icon getIcon() {
+			return new ImageIcon(SimpleChatFrameClient.class.getResource("send_16_16.jpg")); //$NON-NLS-1$
+		}
+
+		public NewSalonAction() {
+			putValue(NAME, Messages.getString("SimpleChatFrameClient.9")); //$NON-NLS-1$
+			putValue(SHORT_DESCRIPTION, Messages.getString("SimpleChatFrameClient.14")); //$NON-NLS-1$
+			putValue(SMALL_ICON, getIcon());
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			sendMessage(1);
+		}
+	}
+	private class CloseSalonAction extends ResourceAction {
+		private Icon getIcon() {
+			return new ImageIcon(SimpleChatFrameClient.class.getResource("send_16_16.jpg")); //$NON-NLS-1$
+		}
+
+		public CloseSalonAction() {
+			putValue(NAME, Messages.getString("SimpleChatFrameClient.11")); //$NON-NLS-1$
+			putValue(SHORT_DESCRIPTION, Messages.getString("SimpleChatFrameClient.15")); //$NON-NLS-1$
+			putValue(SMALL_ICON, getIcon());
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			sendMessage(2);
+		}
+	}
+	
+	
 	private class LockAction extends ResourceAction {
 		public LockAction() {
 			putValue(NAME, Messages.getString("SimpleChatFrameClient.1")); //$NON-NLS-1$
@@ -400,4 +458,15 @@ public class SimpleChatFrameClient extends JFrame {
 			}
 		});
 	}
+	
+	public void addSalon(EventSalonADD event){
+		System.out.println("Ajout du salon :" + event.getSalon().getNomSalon());
+		createOngletSalon(new DefaultStyledDocument(), tabbedPaneSalon, event.getSalon());
+	}
+	
+	public void supprSalon(EventSalonSUPPR event){
+		System.out.println("Suppression du salon :" + event.getSalon().getNomSalon());
+		
+	}
+	
 }

@@ -76,7 +76,7 @@ public class ServerToClientThread extends Thread {
 						String pwd = ClientServerProtocol.decodeProtocole_PWD(line);
 						String nomSalon = ClientServerProtocol.decodeProtocole_NomSalon(line);
 						int idSalon = ClientServerProtocol.decodeProtocole_IdSalon(line);
-
+						int nouveauIdSalon = ClientServerProtocol.decodeProtocole_Nouveausalon(line);
 						String nomRecepteur = ClientServerProtocol.decodeProtocole_UtilisateurRecepteur(line);
 						// Analyse et traitement de la ligne reçue : On se base
 						// sur la nature de la commande pour déterminer le
@@ -87,7 +87,7 @@ public class ServerToClientThread extends Thread {
 							done = true;
 							// On informes les IHM clients qu'un utilisateur
 							// s'en va
-							BroadcastThread.sendMessage(user, pwd, msg, commande, idSalon, nomSalon, nomRecepteur);
+							BroadcastThread.sendMessage(user, pwd, msg, commande, idSalon, nomSalon, nomRecepteur, nouveauIdSalon);
 							// On supprime l'utilisateur de la liste des
 							// Utilisateurs
 							BroadcastThread.removeClient(user);
@@ -99,13 +99,13 @@ public class ServerToClientThread extends Thread {
 						case ClientServerProtocol.NVSALON: // L'utilisateur veut
 															// créer un nouveau
 															// salon
-							BroadcastThread.createNewSalon(user, pwd, msg, commande, idSalon, nomSalon, nomRecepteur);
+							BroadcastThread.createNewSalon(user, pwd, msg, commande, idSalon, nomSalon, nomRecepteur, nouveauIdSalon);
 							break;
 
 						case ClientServerProtocol.NVMSGPRIVE: // L'utilisateur
 																// veut envoyer
 																// un msg privé
-							BroadcastThread.createMsgPrive(user, pwd, msg, commande, idSalon, nomSalon, nomRecepteur);
+							BroadcastThread.createMsgPrive(user, pwd, msg, commande, idSalon, nomSalon, nomRecepteur, nouveauIdSalon);
 							break;
 
 						case ClientServerProtocol.QUITSALON: // L'utilisateur
@@ -113,7 +113,7 @@ public class ServerToClientThread extends Thread {
 																// un salon
 																// donné
 							BroadcastThread.removeClientFromSalon(user, pwd, msg, commande, idSalon, nomSalon,
-									nomRecepteur);
+									nomRecepteur, nouveauIdSalon);
 
 							break;
 
@@ -122,7 +122,7 @@ public class ServerToClientThread extends Thread {
 								System.err.println("ServerToClientThread::run(), login!=user" + login);
 
 							}
-							BroadcastThread.sendMessage(user, pwd, msg, commande, idSalon, nomSalon, nomRecepteur);
+							BroadcastThread.sendMessage(user, pwd, msg, commande, idSalon, nomSalon, nomRecepteur, nouveauIdSalon);
 							break;
 						}
 
