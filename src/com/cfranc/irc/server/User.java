@@ -5,6 +5,7 @@ public class User {
 	private String login;
 	private String pwd;
 	private int idSalon;
+	private String salonName;
 	
 	public String getLogin() {
 		return login;
@@ -35,6 +36,16 @@ public class User {
 		this.login = login;
 		this.pwd = pwd;
 		this.idSalon=userSalon;
-	}	
+	}
+
+	public String getSalonName() {
+		return salonName;
+	}
+
+	public void setSalonName(String salonName) {
+		this.salonName = salonName;
+	}
+
+	
 	
 }

@@ -17,6 +17,7 @@ public class ServerToClientThread extends Thread {
 	private Socket socket = null;
 	private DataInputStream streamIn = null;
 	private DataOutputStream streamOut = null;
+
 	private DefaultListModel<String> clientListModel;
 
 	public ServerToClientThread(User user, Socket socket, DefaultListModel<String> clientListModel) {
@@ -75,31 +76,53 @@ public class ServerToClientThread extends Thread {
 						String pwd = ClientServerProtocol.decodeProtocole_PWD(line);
 						String nomSalon = ClientServerProtocol.decodeProtocole_NomSalon(line);
 						int idSalon = ClientServerProtocol.decodeProtocole_IdSalon(line);
-						
-						// Analyse et traitement de la ligne reçue : On se base sur la nature de la commande pour déterminer le travail à faire
+
+						String nomRecepteur = ClientServerProtocol.decodeProtocole_UtilisateurRecepteur(line);
+						// Analyse et traitement de la ligne reçue : On se base
+						// sur la nature de la commande pour déterminer le
+						// travail à faire
 						switch (commande) {
-						case ClientServerProtocol.DEL: // L'utilisateur veut quitter le chat.
+						case ClientServerProtocol.DEL: // L'utilisateur veut
+														// quitter le chat.
 							done = true;
 							// On informes les IHM clients qu'un utilisateur
 							// s'en va
-							BroadcastThread.sendMessage(user, pwd, msg, commande, idSalon, nomSalon);
+							BroadcastThread.sendMessage(user, pwd, msg, commande, idSalon, nomSalon, nomRecepteur);
 							// On supprime l'utilisateur de la liste des
-							// Utilisateur du salon
-							BroadcastThread.removeClient(user, idSalon);
+							// Utilisateurs
+							BroadcastThread.removeClient(user);
 							// Suppression de l'utilisateur de la liste des
 							// utilisateurs connectés (IHM Serveur)
 							clientListModel.removeElement(user.getLogin());
 							break;
-							
-						case ClientServerProtocol.NVSALON: // L'utilisateur veut créer un nouveau salon
-							BroadcastThread.createNewSalon(user, pwd, msg, commande, idSalon, nomSalon);
+
+						case ClientServerProtocol.NVSALON: // L'utilisateur veut
+															// créer un nouveau
+															// salon
+							BroadcastThread.createNewSalon(user, pwd, msg, commande, idSalon, nomSalon, nomRecepteur);
 							break;
-							
+
+						case ClientServerProtocol.NVMSGPRIVE: // L'utilisateur
+																// veut envoyer
+																// un msg privé
+							BroadcastThread.createMsgPrive(user, pwd, msg, commande, idSalon, nomSalon, nomRecepteur);
+							break;
+
+						case ClientServerProtocol.QUITSALON: // L'utilisateur
+																// veut quitter
+																// un salon
+																// donné
+							BroadcastThread.removeClientFromSalon(user, pwd, msg, commande, idSalon, nomSalon,
+									nomRecepteur);
+
+							break;
+
 						default: // Défaut = diffusion de message texte
 							if (login.equals(user)) {
 								System.err.println("ServerToClientThread::run(), login!=user" + login);
+
 							}
-							BroadcastThread.sendMessage(user, pwd, msg, commande, idSalon, nomSalon);
+							BroadcastThread.sendMessage(user, pwd, msg, commande, idSalon, nomSalon, nomRecepteur);
 							break;
 						}
 

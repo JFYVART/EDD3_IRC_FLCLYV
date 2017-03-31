@@ -14,29 +14,29 @@ import com.cfranc.irc.server.SalonLst;
 public class SimpleChatServerApp {
 
 	private SimpleChatFrameServer frame;
-	public StyledDocument model=new DefaultStyledDocument();
-	DefaultListModel<String> clientListModel=new DefaultListModel<String>();
+	public StyledDocument model = new DefaultStyledDocument();
+	DefaultListModel<String> clientListModel = new DefaultListModel<String>();
 	private ClientConnectThread clientConnectThread;
-	public SalonLst mySalons=null;
-			
+	public SalonLst mySalons = null;
+
 	public SimpleChatServerApp(int port) {
-		
+
 		// Init GUI
-		this.frame=new SimpleChatFrameServer(port, this.model, clientListModel);
-		this.mySalons= frame.serverSalon;
+		this.frame = new SimpleChatFrameServer(port, this.model, clientListModel);
+		this.mySalons = frame.serverSalon;
 		try {
 			this.model.insertString(this.model.getLength(), "Wellcome into IRC Server Manager\n", null);
 		} catch (BadLocationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		((JFrame)this.frame).setVisible(true);
-		
+		((JFrame) this.frame).setVisible(true);
+
 		// Start connection services
-		this.clientConnectThread=new ClientConnectThread(port, this.model, clientListModel, mySalons);
+		this.clientConnectThread = new ClientConnectThread(port, this.model, clientListModel, mySalons);
 		this.clientConnectThread.start();
 	}
-	
+
 	/**
 	 * Launch the application.
 	 */
@@ -44,7 +44,7 @@ public class SimpleChatServerApp {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					SimpleChatServerApp app = new SimpleChatServerApp(4567);					
+					SimpleChatServerApp app = new SimpleChatServerApp(4567);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

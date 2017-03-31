@@ -14,6 +14,8 @@ import javax.swing.text.Style;
 import javax.swing.text.StyledDocument;
 
 import com.cfranc.irc.ClientServerProtocol;
+import com.cfranc.irc.server.Salon;
+import com.cfranc.irc.server.SalonLst;
 import com.cfranc.irc.ui.SimpleChatClientApp;
 
 public class ClientToServerThread extends Thread implements IfSenderModel {
@@ -24,15 +26,22 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 	String login, pwd;
 	DefaultListModel<String> clientListModel;
 	StyledDocument documentModel;
+	DefaultListModel<Salon> salonListModel;
+	// Nouveau Protocole
+	String nomRecepteur = "";
+	String commande = "";
+	int idSalon = SalonLst.DEFAULT_SALON_ID;
+	String nomSalon = SalonLst.DEFAULT_SALON_NAME;		
 
 	public ClientToServerThread(StyledDocument documentModel, DefaultListModel<String> clientListModel, Socket socket,
-			String login, String pwd) {
+			String login, String pwd, DefaultListModel<Salon> salonListModel) {
 		super();
 		this.documentModel = documentModel;
 		this.clientListModel = clientListModel;
 		this.socket = socket;
 		this.login = login;
 		this.pwd = pwd;
+		this.salonListModel = salonListModel;
 	}
 
 	public void open() throws IOException {
@@ -48,6 +57,7 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 			streamIn.close();
 		if (streamOut != null)
 			streamOut.close();
+		System.out.println("Socket fermée");
 	}
 
 	public void receiveMessage(String user, String line) {
@@ -66,14 +76,32 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 		}
 	}
 
+	/***
+	 * Ajoute si (si besoin) le nom du salon à la liste des salon
+	 * 
+	 * @param nomSalon
+	 */
+	public void gereNomSalon(String nomSalon) {
+		if (!nomSalon.isEmpty()) {
+			Salon salonLu = new Salon(nomSalon, SalonLst.DEFAULT_SALON_NOT_PRIVACY);
+			if (!salonListModel.contains(salonLu)) {
+				salonListModel.addElement(salonLu);
+			}
+		}
+	}
+
 	void readMsg() throws IOException {
 		String line = streamIn.readUTF();
 		System.out.println(line);
 
-		// Nouveau protocole : On décode la communication qui vient d'arriver 
+		// Nouveau protocole : On décode la communication qui vient d'arriver
 		String loginUtilisateur = ClientServerProtocol.decodeProtocole_Login(line);
 		String msg = ClientServerProtocol.decodeProtocole_Message(line);
 		String commande = ClientServerProtocol.decodeProtocole_Command(line);
+		String nomSalon = ClientServerProtocol.decodeProtocole_NomSalon(line);
+		int idSalon = ClientServerProtocol.decodeProtocole_IdSalon(line);
+
+		gereNomSalon(nomSalon);
 
 		if (commande.equals(ClientServerProtocol.ADD)) {
 			if (!clientListModel.contains(loginUtilisateur)) {
@@ -83,7 +111,7 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 		} else if (commande.equals(ClientServerProtocol.DEL)) {
 			if (clientListModel.contains(loginUtilisateur)) {
 				clientListModel.removeElement(loginUtilisateur);
-				receiveMessage(loginUtilisateur, " quite le salon !");
+				receiveMessage(loginUtilisateur, " quitte le salon !");
 			}
 		} else {
 			receiveMessage(loginUtilisateur, msg);
@@ -107,7 +135,9 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 		boolean res = false;
 		if (msgToSend != null) {
 			// Nouveau protocole : on envoie le message de l'utilisateur courant
-			String line = ClientServerProtocol.encodeProtocole_Ligne(login, "", msgToSend, "", 0, "");
+			commande = "";
+			pwd = "";
+			String line = ClientServerProtocol.encodeProtocole_Ligne(login, pwd, msgToSend, commande, idSalon, nomSalon, nomRecepteur);
 			streamOut.writeUTF(line);
 			msgToSend = null;
 			streamOut.flush();
@@ -118,7 +148,10 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 
 	public void quitServer() throws IOException {
 		// Nouveau protocole : On signale que l'utilisateur courant s'en va
-		String line = ClientServerProtocol.encodeProtocole_Ligne(login, "", "", ClientServerProtocol.DEL, 0, "");
+		commande = ClientServerProtocol.DEL;
+		pwd = "";
+		msgToSend = "";
+		String line = ClientServerProtocol.encodeProtocole_Ligne(login, pwd, msgToSend, commande, idSalon, nomSalon, nomRecepteur);
 		streamOut.writeUTF(line);
 		streamOut.flush();
 		done = true;
@@ -145,7 +178,9 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 					done = true;
 				}
 			}
+
 			close();
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -159,17 +194,19 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 		// Nouveau protocole :
 		String line = "";
 		String commande = "";
-		try{
+		try {
 			while (streamIn.available() <= 0) {
 				Thread.sleep(100);
 			}
 			loginPwdQ = streamIn.readUTF();
 			// Nouveau protocole : On décode la commande du serveur
 			commande = ClientServerProtocol.decodeProtocole_Command(loginPwdQ);
-			// Si la commande est une demande d'identification (Login et PWD)  
+			// Si la commande est une demande d'identification (Login et PWD)
 			if (commande.equals(ClientServerProtocol.LOGIN_PWD)) {
 				// On renvoie le login et pwd de la fenetre de connexion.
-				line = ClientServerProtocol.encodeProtocole_Ligne(this.login, this.pwd, "", "", 0, "");
+				this.commande = "";
+				msgToSend = "";
+				line = ClientServerProtocol.encodeProtocole_Ligne(this.login, this.pwd,msgToSend, this.commande, idSalon, nomSalon, nomRecepteur);
 				streamOut.writeUTF(line);
 			}
 			while (streamIn.available() <= 0) {
@@ -178,11 +215,12 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 			String acq = streamIn.readUTF();
 			// Nouveau protocole : On décode la réponse du serveur
 			commande = ClientServerProtocol.decodeProtocole_Command(acq);
+			String nomSalon = ClientServerProtocol.decodeProtocole_NomSalon(acq);
 			// Si la commande est une réponse positive
 			if (commande.equals(ClientServerProtocol.OK)) {
 				res = true;
 			}
-						
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
