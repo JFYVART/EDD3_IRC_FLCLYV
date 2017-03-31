@@ -5,6 +5,8 @@ import java.awt.Choice;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
@@ -69,7 +71,7 @@ public class SimpleChatFrameClient extends JFrame {
 	private DefaultListSalonModel salonListModel;
 	IfSenderModel sender;
 	private String senderName;
-
+	private String nouveauNomSalonSaisi = "";
 	private JPanel contentPane;
 	private JPanel panelPiedPage;
 	private JTextField textField;
@@ -82,6 +84,8 @@ public class SimpleChatFrameClient extends JFrame {
 
 	private boolean isScrollLocked = true;
 	private String salonName;
+	private AddNewSalonFrame newSalonFrame;
+	JTextField txtCrerUnSalon;
 	// private JTextField textField_NewSalon;
 
 	/**
@@ -124,7 +128,7 @@ public class SimpleChatFrameClient extends JFrame {
 			sender.setMsgToSend(textField.getText(), 0,"", "","");
 			break;
 		case 1:// On veut un nouveau salon
-			sender.setMsgToSend("Création d'un salon", 0,"Nouveau Salon",ClientServerProtocol.NVSALON,"");
+			sender.setMsgToSend("Création d'un salon", 0,nouveauNomSalonSaisi,ClientServerProtocol.NVSALON,"");
 			break;
 
 		case 2:// On ferme le salon
@@ -153,6 +157,9 @@ public class SimpleChatFrameClient extends JFrame {
 		this.salonListModel = salonListModel;
 		this.salonListModel.addObserver(this);
 
+		newSalonFrame= new AddNewSalonFrame();
+		newSalonFrame.setVisible(false);
+		
 		setTitle(Messages.getString("SimpleChatFrameClient.4")); //$NON-NLS-1$
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 545, 300);
@@ -193,22 +200,38 @@ public class SimpleChatFrameClient extends JFrame {
 		}
 
 		JToolBar toolBar = new JToolBar();
-		contentPane.add(toolBar, BorderLayout.NORTH);
+        contentPane.add(toolBar, BorderLayout.NORTH);
 
-		JButton button = toolBar.add(sendAction);
+        JButton button = toolBar.add(sendAction);
+        
+                Label label = new Label(Messages.getString("SimpleChatFrameClient.label.text")); //$NON-NLS-1$
+                label.setAlignment(Label.RIGHT);
+                toolBar.add(label);
+        
+        txtCrerUnSalon = new JTextField();
+        txtCrerUnSalon.setFont(txtCrerUnSalon.getFont().deriveFont(txtCrerUnSalon.getFont().getStyle() | Font.ITALIC, 9f));
+        //txtCrerUnSalon.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
+        //        Messages.getString(salonName);
 
-		// SCLU: On passe de Label à JLabel
-		JLabel label = new JLabel(Messages.getString("SimpleChatFrameClient.label.text")); //$NON-NLS-1$
-		//label.setAlignment(JLabel.RIGHT);
-		toolBar.add(label);
-
-		// On met en place la Combo Box pour le choix du Salon
-		Choice choiceSalon = new Choice();
+        toolBar.add(txtCrerUnSalon);
+        txtCrerUnSalon.setColumns(10);
+        
+        JButton btnNewButton = new JButton(newSalondAction);
+        btnNewButton.setText("Nouveau salon"); //$NON-NLS-1$
+        btnNewButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+    
+            	nouveauNomSalonSaisi = txtCrerUnSalon.getText();
+            }
+        });
+        toolBar.add(btnNewButton);
+				// On met en place la Combo Box pour le choix du Salon
+//		Choice choiceSalon = new Choice();
 		//toolBar.add(choiceSalon);
 		// doit afficher la liste des salons
 		//SCLU
-		JComboBox choixSalon=new JComboBox();
-		toolBar.add(choixSalon);
+//		JComboBox choixSalon=new JComboBox();
+//		toolBar.add(choixSalon);
 
 		panelPiedPage = new JPanel();
 		contentPane.add(panelPiedPage, BorderLayout.SOUTH);
@@ -328,16 +351,18 @@ public class SimpleChatFrameClient extends JFrame {
 		 */
 		JMenuItem mntmCreateSalon = new JMenuItem(Messages.getString("SimpleChatFrameClient.mntmCrerUnNouveau.text")); //$NON-NLS-1$
 		
-		mntmCreateSalon.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusGained(FocusEvent e) {
-			}
-		});
-		mntmCreateSalon.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				AddNewSalonFrame newSalonFrame = new AddNewSalonFrame();
-			}
-		});
+//		mntmCreateSalon.addFocusListener(new FocusAdapter() {
+//			@Override
+//			public void focusGained(FocusEvent e) {
+//			}
+//		});
+//		mntmCreateSalon.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				newSalonFrame.setVisible(true);
+//				nouveauNomSalonSaisi = newSalonFrame.newSalon;
+//				System.out.println("Nom du nouveau salon demandé : " + nouveauNomSalonSaisi);
+//			}
+//		});
 
 		mntmCreateSalon.setAction(newSalondAction);
 		mnSalon.add(mntmCreateSalon);

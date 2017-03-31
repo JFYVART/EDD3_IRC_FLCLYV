@@ -29,7 +29,7 @@ public class AddNewSalonFrame extends JFrame implements Observable{
 
 	private JTextField textField_NewSalonName;
 	//private MouseListener l ;
-	private String newSalon;
+	public String newSalon;
 	
 	public AddNewSalonFrame() {
 		super();
@@ -67,15 +67,11 @@ public class AddNewSalonFrame extends JFrame implements Observable{
 		this.setVisible(true);
 	}
 
-	public String CreateSalon() {
-		String newSalon = textField_NewSalonName.getText();		
+	public void CreateSalon() {
+		newSalon = textField_NewSalonName.getText();		
 		System.out.println(" : " + newSalon);
 		new Salon(newSalon, true) ;
-	
-		//
-		
-		return newSalon ;
-	
+		this.setVisible(false);
 	}
 
 	@Override
