@@ -25,6 +25,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -174,13 +175,18 @@ public class SimpleChatFrameClient extends JFrame {
 
 		JButton button = toolBar.add(sendAction);
 
-		Label label = new Label(Messages.getString("SimpleChatFrameClient.label.text")); //$NON-NLS-1$
-		label.setAlignment(Label.RIGHT);
+		// SCLU: On passe de Label à JLabel
+		JLabel label = new JLabel(Messages.getString("SimpleChatFrameClient.label.text")); //$NON-NLS-1$
+		//label.setAlignment(JLabel.RIGHT);
 		toolBar.add(label);
 
+		// On met en place la Combo Box pour le choix du Salon
 		Choice choiceSalon = new Choice();
-		toolBar.add(choiceSalon);
+		//toolBar.add(choiceSalon);
 		// doit afficher la liste des salons
+		//SCLU
+		JComboBox choixSalon=new JComboBox();
+		toolBar.add(choixSalon);
 
 		panelPiedPage = new JPanel();
 		contentPane.add(panelPiedPage, BorderLayout.SOUTH);
