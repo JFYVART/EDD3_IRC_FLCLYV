@@ -3,7 +3,6 @@ package com.cfranc.irc;
 public class ClientServerProtocol {
 	public static final String LOGIN_PWD = "LoginPwd";
 	public static final String SEPARATOR = "#";
-	
 	/**
 	 *  Liste des commandes utilisables
 	 */
