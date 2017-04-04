@@ -82,37 +82,37 @@ public class SimpleChatFrameServer extends JFrame {
 		  scrollPaneList.setViewportView(list);
 		 
 
-		  DefaultMutableTreeNode top = new DefaultMutableTreeNode("Liste des salons");
-			tree = new JTree(top);
-			tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-			tree.addTreeSelectionListener(new TreeSelectionListener() {
-				public void valueChanged(TreeSelectionEvent e) {
-					for (int i = 0; i < BroadcastThread.mySalons.getLstSalons().size(); i++) {
-						// Récupération du nom du salon
-						Salon salonEncours = BroadcastThread.mySalons.getLstSalons().get(i);
-						DefaultMutableTreeNode salonNode = new DefaultMutableTreeNode(salonEncours.getNomSalon());
-						// Ajout du nom du salon à l'arbre
-						top.add(salonNode);
-						// A partir de l'id du salon en cours, on récupère le hashmap (User + Thread Server to client) 
-						HashMap<User, ServerToClientThread> ListThread = BroadcastThread.getClientTreadsMap(BroadcastThread.mySalons.retrieveIdSalon(salonEncours.getNomSalon()));
-						// On en extrait chaque utilisateur
-						for (Entry<User, ServerToClientThread> entry : ListThread.entrySet()) {
-
-							DefaultMutableTreeNode utilisateurNode = new DefaultMutableTreeNode(entry.getKey().getLogin());
-							salonNode.add(utilisateurNode);
-						}
-						// On ajoute le nom de chaque utilisateur au Salon Node
-						// 
-						
-					}
-				}
-			});
-			
-			
-			// Create the scroll pane and add the tree to it.
-			JScrollPane treeView = new JScrollPane(tree);
-			// Mise du treeView à gauche
-			getContentPane().add(treeView, BorderLayout.WEST);
-			// splitPane.setTopComponent(treeView);
+//		  DefaultMutableTreeNode top = new DefaultMutableTreeNode("Liste des salons");
+//			tree = new JTree(top);
+//			tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+//			tree.addTreeSelectionListener(new TreeSelectionListener() {
+//				public void valueChanged(TreeSelectionEvent e) {
+//					for (int i = 0; i < BroadcastThread.mySalons.getLstSalons().size(); i++) {
+//						// Récupération du nom du salon
+//						Salon salonEncours = BroadcastThread.mySalons.getLstSalons().get(i);
+//						DefaultMutableTreeNode salonNode = new DefaultMutableTreeNode(salonEncours.getNomSalon());
+//						// Ajout du nom du salon à l'arbre
+//						top.add(salonNode);
+//						// A partir de l'id du salon en cours, on récupère le hashmap (User + Thread Server to client) 
+//						HashMap<User, ServerToClientThread> ListThread = BroadcastThread.getClientTreadsMap(BroadcastThread.mySalons.retrieveIdSalon(salonEncours.getNomSalon()));
+//						// On en extrait chaque utilisateur
+//						for (Entry<User, ServerToClientThread> entry : ListThread.entrySet()) {
+//
+//							DefaultMutableTreeNode utilisateurNode = new DefaultMutableTreeNode(entry.getKey().getLogin());
+//							salonNode.add(utilisateurNode);
+//						}
+//						// On ajoute le nom de chaque utilisateur au Salon Node
+//						// 
+//						
+//					}
+//				}
+//			});
+//			
+//			
+//			// Create the scroll pane and add the tree to it.
+//			JScrollPane treeView = new JScrollPane(tree);
+//			// Mise du treeView à gauche
+//			getContentPane().add(treeView, BorderLayout.WEST);
+//			// splitPane.setTopComponent(treeView);
 	}
 }

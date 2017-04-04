@@ -14,63 +14,27 @@ public class SalonLst {
 	public SalonLst() {
 		this.lstSalons = new ArrayList<Salon>();
 		// Création du salon "Général"
-		this.lstSalons.add(new Salon(DEFAULT_SALON_NAME, false));
-	}
-
-	public Salon get(int i) {
-		return (Salon) lstSalons.get(i);
-	}
-
-	public void set(Salon salon) {
-		lstSalons.add(salon);
-	}
-
-	public String getSalonName(int i) {
-		Salon salon = get(i);
-		return salon.getNomSalon();
-	}
-
-	public void setSalonName(int i, String name) {
-		Salon salon = get(i);
-		salon.setNomSalon(name);
-	}
-
-	/**
-	 * Cherche la position du salon dans lstSalon
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public int retrieveIdSalon(String name) {
-		// init Salon
-		int idSalon = 0;
-		int position = 0;
-		for (Salon salon : lstSalons) {
-			if (salon.equals(name)) {
-				idSalon = position;
-			} else
-				position++;
-		}
-		return idSalon;
+		this.lstSalons.add(new Salon(DEFAULT_SALON_NAME, false, DEFAULT_SALON_ID));
 	}
 
 	/***
 	 * Cherche à partir de son nom si un salon existe déjà - S'il existe renvoie
 	 * l'idSalon - S'il n'existe pas : renvoie le nouvel idSalon (après création
 	 * du salon dans lstSalon)
-	 * 
+	 *
 	 * @param name
 	 * @param isPrivate
 	 * @return
 	 */
 	public int createOrRetrieveSalon(String name, boolean isPrivate) {
-		int idSalon = retrieveIdSalon(name);
+		int idSalon = this.retrieveIdSalon(name);
 		if (idSalon == 0) {
 			// on crée le salon
-			Salon salon = new Salon(name, isPrivate);
+			Salon salon = new Salon(name, isPrivate, DEFAULT_SALON_ID);
 			// On ajoute le salon
-			set(salon);
-			idSalon = lstSalons.size() - 1;
+			this.set(salon);
+			idSalon = this.lstSalons.size() - 1;
+			salon.setIdSalon(idSalon);
 		}
 
 		return idSalon;
@@ -78,24 +42,33 @@ public class SalonLst {
 
 	/***
 	 * Supprime un salon de la liste à partir de son nom
-	 * 
+	 *
 	 * @param name
 	 */
 	public void deleteSalon(String name) {
-		int idSalon = retrieveIdSalon(name);
+		int idSalon = this.retrieveIdSalon(name);
 		if (idSalon > 0) {
-			lstSalons.remove(idSalon);
+			this.lstSalons.remove(idSalon);
 		}
 	}
 
+	public Salon get(int i) {
+		return this.lstSalons.get(i);
+	}
+
 	/**
-	 * Getteur Liste des salons 
+	 * Getteur Liste des salons
 	 * @return
 	 */
 	public ArrayList<Salon> getLstSalons(){
-		return lstSalons;
+		return this.lstSalons;
 	}
-	
+
+	public String getSalonName(int i) {
+		Salon salon = this.get(i);
+		return salon.getNomSalon();
+	}
+
 	/**
 	 * Liste des salons sous forme de tableau de String pour la JTree
 	 * @return
@@ -104,10 +77,39 @@ public class SalonLst {
 		String[] salons;
 		int i=0;
 		salons = new String[this.lstSalons.size()];
-		for (Salon salon : lstSalons) {
+		for (Salon salon : this.lstSalons) {
 			salons[i]=salon.getNomSalon();
-			i++;	
+			i++;
 		}
 		return salons;
+	}
+
+	/**
+	 * Cherche la position du salon dans lstSalon
+	 *
+	 * @param name
+	 * @return
+	 */
+	public int retrieveIdSalon(String name) {
+		// init Salon
+		int idSalon = 0;
+		int position = 0;
+		for (Salon salon : this.lstSalons) {
+			if (salon.getNomSalon().equals(name)) {
+				idSalon = position;
+			} else {
+				position++;
+			}
+		}
+		return idSalon;
+	}
+
+	public void set(Salon salon) {
+		this.lstSalons.add(salon);
+	}
+
+	public void setSalonName(int i, String name) {
+		Salon salon = this.get(i);
+		salon.setNomSalon(name);
 	}
 }

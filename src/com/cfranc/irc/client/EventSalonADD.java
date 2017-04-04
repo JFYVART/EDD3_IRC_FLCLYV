@@ -10,7 +10,7 @@ public class EventSalonADD {
 	}
 
 	public Salon getSalon() {
-		return salon;
+		return this.salon;
 	}
 
 	public void setSalon(Salon salon) {

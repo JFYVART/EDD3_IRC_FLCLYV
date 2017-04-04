@@ -22,6 +22,16 @@ public class BroadcastThread extends Thread {
 		Collections.synchronizedList(listConnextedUser);
 	}
 
+	public static boolean accept(User user, int idSalon) {
+		boolean res = true;
+		// On récupère le clientTreadsMap lié au salon
+		HashMap<User, ServerToClientThread> clientTreadsMap = getClientTreadsMap(idSalon);
+		if (clientTreadsMap.containsKey(user)) {
+			res = false;
+		}
+		return res;
+	}
+
 	public static boolean addClient(int idSalon, User user, ServerToClientThread serverToClientThread) {
 		boolean res = true;
 		// Nouveau protocole :
@@ -72,72 +82,32 @@ public class BroadcastThread extends Thread {
 		return res;
 	}
 
-	public static void sendMessage(User sender, String pwd, String msg, String command, int idSalon, String nomSalon,
-			String recepteur, int nouveauIdSalon) {
-		// Nouveau protocole :
-		String line;
-		// On récupère le clientTreadsMap lié au salon
-		HashMap<User, ServerToClientThread> clientTreadsMap = getClientTreadsMap(idSalon);
-
-		Collection<ServerToClientThread> clientTreads = clientTreadsMap.values();
-		Iterator<ServerToClientThread> receiverClientThreadIterator = clientTreads.iterator();
-		while (receiverClientThreadIterator.hasNext()) {
-			ServerToClientThread clientThread = (ServerToClientThread) receiverClientThreadIterator.next();
-			// Nouveau protocole : On envoie le message en précisant le login et
-			// le msg
-
-			line = ClientServerProtocol.encodeProtocole_Ligne(sender.getLogin(), pwd, msg, command, idSalon, nomSalon,
-					recepteur, nouveauIdSalon);
-
-			clientThread.post(line);
-			System.out.println("sendMessage : " + "#" + sender.getLogin() + "#" + msg);
+	/***
+	 * Envoie à tous les utilisateurs de tous les salons un message
+	 *
+	 * @param user
+	 * @param pwd
+	 * @param msg
+	 * @param commande
+	 * @param idSalon
+	 * @param nomSalon
+	 * @param recepteur
+	 */
+	private static void broadCastMessage(User user, String pwd, String msg, String commande, int idSalon,
+			String nomSalon, String recepteur, int nouveauIdSalon) {
+		// On parcoure la liste des utilisateurs connectés
+		for (String connectedUsername : listConnextedUser) {
+			if (!connectedUsername.equals(user.getLogin())){
+				User connectedUser = new User(connectedUsername, "", idSalon);
+				sendMessage(connectedUser, pwd, msg, commande, idSalon, nomSalon, recepteur, nouveauIdSalon);
+			}
 		}
 	}
 
 	/***
-	 * Gestion d'une demande de création de salon publique (Tout le monde peut y
-	 * accèder)
-	 * 
-	 * @param user
-	 * @param pwd
-	 * @param msg
-	 * @param commande
-	 * @param idSalon
-	 * @param nomSalon
-	 * @param recepteur
-	 */
-	public static void createNewSalon(User user, String pwd, String msg, String commande, int idSalon, String nomSalon,
-			String recepteur, int nouveauIdSalon) {
-		// on cree le nouveau salon
-		nouveauIdSalon = mySalons.createOrRetrieveSalon(nomSalon, SalonLst.DEFAULT_SALON_NOT_PRIVACY);
-		// on renvoie le message avec l'idSalon à tout le monde
-		broadCastMessage(user, pwd, msg, commande, idSalon, nomSalon, recepteur, nouveauIdSalon);
-	}
-	
-	/***
-	 * Gestion d'une demande de suppression de salon (qu'il soit public ou privé)
-	 * 
-	 * @param user
-	 * @param pwd
-	 * @param msg
-	 * @param commande
-	 * @param idSalon
-	 * @param nomSalon
-	 * @param recepteur
-	 */
-	public static void removewSalon(User user, String pwd, String msg, String commande, int idSalon, String nomSalon,
-			String recepteur, int nouveauIdSalon) {
-		// on cree le nouveau salon
-		idSalon = mySalons.createOrRetrieveSalon(nomSalon, SalonLst.DEFAULT_SALON_NOT_PRIVACY);
-		// on renvoie le message avec l'idSalon à tout le monde
-		broadCastMessage(user, pwd, msg, commande, idSalon, nomSalon, recepteur, nouveauIdSalon);
-	}
-	
-
-	/***
 	 * Gestion d'une demande de création d'un salon privé avec deux utilisateurs
 	 * (pour envoyer des messages privés)
-	 * 
+	 *
 	 * @param user
 	 * @param pwd
 	 * @param msg
@@ -159,9 +129,11 @@ public class BroadcastThread extends Thread {
 		sendMessage(recepteurUser, pwd, msg, commande, idSalon, user.getLogin(), "", nouveauIdSalon);
 	}
 
+
 	/***
-	 * Envoie à tous les utilisateurs de tous les salons un message
-	 * 
+	 * Gestion d'une demande de création de salon publique (Tout le monde peut y
+	 * accèder)
+	 *
 	 * @param user
 	 * @param pwd
 	 * @param msg
@@ -170,54 +142,23 @@ public class BroadcastThread extends Thread {
 	 * @param nomSalon
 	 * @param recepteur
 	 */
-	private static void broadCastMessage(User user, String pwd, String msg, String commande, int idSalon,
-			String nomSalon, String recepteur, int nouveauIdSalon) {
-		// On parcoure la liste des utilisateurs connectés
-		for (String connectedUsername : listConnextedUser) {
-			if (!connectedUsername.equals(user.getLogin())){
-			User connectedUser = new User(connectedUsername, "", idSalon);
-			sendMessage(connectedUser, pwd, msg, commande, idSalon, nomSalon, recepteur, nouveauIdSalon);
-			}
-		}
-	}
-
-	public static void removeClientFromSalon(User user, String pwd, String msg, String commande, int idSalon,
-			String nomSalon, String recepteur, int nouveauIdSalon) {
-
-		// On récupère le clientTreadsMap lié au salon
-		HashMap<User, ServerToClientThread> clientTreadsMap = getClientTreadsMap(idSalon);
-		// on supprime le User du clientTreadsMap
-		clientTreadsMap.remove(user);
-		// On envoie le message à tout le monde pour que chaun mette à jour son
-		// IHM
+	public static void createNewSalon(User user, String pwd, String msg, String commande, int idSalon, String nomSalon,
+			String recepteur, int nouveauIdSalon) {
+		// on cree le nouveau salon
+		nouveauIdSalon = mySalons.createOrRetrieveSalon(nomSalon, SalonLst.DEFAULT_SALON_NOT_PRIVACY);
+		// On récupère le Thread existant
+		HashMap<User, ServerToClientThread> HashEnCours = getClientTreadsMap(idSalon);
+		// Puis on l'affecte au nouveau salon
+		HashMap<User, ServerToClientThread> HashDuSalon = createOrRetrieveClientTreadsMapByIdSalon(nouveauIdSalon, user, HashEnCours.get(user));
+		// on renvoie le message avec l'idSalon à tout le monde
 		broadCastMessage(user, pwd, msg, commande, idSalon, nomSalon, recepteur, nouveauIdSalon);
-
-	}
-
-	public static void removeClient(User user) {
-		// On parcoure tous les clientTreadsMap (salon) pour supprimer le USER
-
-		// On récupère le clientTreadsMap lié au salon
-		// HashMap<User, ServerToClientThread> clientTreadsMap =
-		// getClientTreadsMap(idSalon);
-		// clientTreadsMap.remove(user);
-	}
-
-	public static boolean accept(User user, int idSalon) {
-		boolean res = true;
-		// On récupère le clientTreadsMap lié au salon
-		HashMap<User, ServerToClientThread> clientTreadsMap = getClientTreadsMap(idSalon);
-		if (clientTreadsMap.containsKey(user)) {
-			res = false;
-		}
-		return res;
 	}
 
 	/**
 	 * Recherche si il existe un HashMap<User, ServerToClientThread>
 	 * correspondant à l'idSalon S'il existe, on le retourne tel quel Sinon on
 	 * le crée en rajoutant le user et son serverToClientThread
-	 * 
+	 *
 	 * @param idSalon
 	 * @param user
 	 * @param serverToClientThread
@@ -234,7 +175,7 @@ public class BroadcastThread extends Thread {
 		if (salon_ClientTreadsMap.containsKey(idSalon)) {
 			clientTreadsMap = salon_ClientTreadsMap.get(idSalon);
 		} else // On ajoute le idsalon et le Thread au nouveau HashMap<User,
-				// ServerToClientThread>
+			// ServerToClientThread>
 		{
 			salon_ClientTreadsMap.put(new Integer(idSalon), clientTreadsMap);
 		}
@@ -245,7 +186,7 @@ public class BroadcastThread extends Thread {
 	/**
 	 * Retourne le HashMap<User, ServerToClientThread> correspondant au salon On
 	 * part du principe que ce HashMap existe !!!
-	 * 
+	 *
 	 * @param idSalon
 	 * @return
 	 */
@@ -262,5 +203,68 @@ public class BroadcastThread extends Thread {
 			clientTreadsMap = salon_ClientTreadsMap.get(idSalon);
 		}
 		return clientTreadsMap;
+	}
+
+	public static void removeClient(User user) {
+		// On parcoure tous les clientTreadsMap (salon) pour supprimer le USER
+
+		// On récupère le clientTreadsMap lié au salon
+		// HashMap<User, ServerToClientThread> clientTreadsMap =
+		// getClientTreadsMap(idSalon);
+		// clientTreadsMap.remove(user);
+	}
+
+	public static void removeClientFromSalon(User user, String pwd, String msg, String commande, int idSalon,
+			String nomSalon, String recepteur, int nouveauIdSalon) {
+
+		// On récupère le clientTreadsMap lié au salon
+		HashMap<User, ServerToClientThread> clientTreadsMap = getClientTreadsMap(idSalon);
+		// on supprime le User du clientTreadsMap
+		clientTreadsMap.remove(user);
+		// On envoie le message à tout le monde pour que chaun mette à jour son
+		// IHM
+		broadCastMessage(user, pwd, msg, commande, idSalon, nomSalon, recepteur, nouveauIdSalon);
+
+	}
+
+	/***
+	 * Gestion d'une demande de suppression de salon (qu'il soit public ou privé)
+	 *
+	 * @param user
+	 * @param pwd
+	 * @param msg
+	 * @param commande
+	 * @param idSalon
+	 * @param nomSalon
+	 * @param recepteur
+	 */
+	public static void removewSalon(User user, String pwd, String msg, String commande, int idSalon, String nomSalon,
+			String recepteur, int nouveauIdSalon) {
+		// on cree le nouveau salon
+		idSalon = mySalons.createOrRetrieveSalon(nomSalon, SalonLst.DEFAULT_SALON_NOT_PRIVACY);
+		// on renvoie le message avec l'idSalon à tout le monde
+		broadCastMessage(user, pwd, msg, commande, idSalon, nomSalon, recepteur, nouveauIdSalon);
+	}
+
+	public static void sendMessage(User sender, String pwd, String msg, String command, int idSalon, String nomSalon,
+			String recepteur, int nouveauIdSalon) {
+		// Nouveau protocole :
+		String line;
+		// On récupère le clientTreadsMap lié au salon
+		HashMap<User, ServerToClientThread> clientTreadsMap = getClientTreadsMap(idSalon);
+
+		Collection<ServerToClientThread> clientTreads = clientTreadsMap.values();
+		Iterator<ServerToClientThread> receiverClientThreadIterator = clientTreads.iterator();
+		while (receiverClientThreadIterator.hasNext()) {
+			ServerToClientThread clientThread = receiverClientThreadIterator.next();
+			// Nouveau protocole : On envoie le message en précisant le login et
+			// le msg
+
+			line = ClientServerProtocol.encodeProtocole_Ligne(sender.getLogin(), pwd, msg, command, idSalon, nomSalon,
+					recepteur, nouveauIdSalon);
+
+			clientThread.post(line);
+			System.out.println("sendMessage : " + "#" + sender.getLogin() + "#" + msg);
+		}
 	}
 }

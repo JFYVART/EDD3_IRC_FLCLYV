@@ -1,7 +1,6 @@
 package com.cfranc.irc.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Choice;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -11,11 +10,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Scanner;
 
 import javax.swing.AbstractAction;
@@ -26,7 +24,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -66,35 +63,107 @@ import com.cfranc.irc.server.SalonLst;
 
 public class SimpleChatFrameClient extends JFrame {
 
+	private class CloseSalonAction extends ResourceAction {
+		public CloseSalonAction() {
+			this.putValue(NAME, Messages.getString("SimpleChatFrameClient.11")); //$NON-NLS-1$
+			this.putValue(SHORT_DESCRIPTION, Messages.getString("SimpleChatFrameClient.15")); //$NON-NLS-1$
+			this.putValue(SMALL_ICON, this.getIcon());
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			SimpleChatFrameClient.this.sendMessage(2);
+		}
+
+		private Icon getIcon() {
+			return new ImageIcon(SimpleChatFrameClient.class.getResource("send_16_16.jpg")); //$NON-NLS-1$
+		}
+	}
+
+	private class LockAction extends ResourceAction {
+		public LockAction() {
+			this.putValue(NAME, Messages.getString("SimpleChatFrameClient.1")); //$NON-NLS-1$
+			this.putValue(SHORT_DESCRIPTION, Messages.getString("SimpleChatFrameClient.0")); //$NON-NLS-1$
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			SimpleChatFrameClient.this.isScrollLocked = (!SimpleChatFrameClient.this.isScrollLocked);
+		}
+	}
+
+	private class NewSalonAction extends ResourceAction {
+		public NewSalonAction() {
+			this.putValue(NAME, Messages.getString("SimpleChatFrameClient.9")); //$NON-NLS-1$
+			this.putValue(SHORT_DESCRIPTION, Messages.getString("SimpleChatFrameClient.14")); //$NON-NLS-1$
+			this.putValue(SMALL_ICON, this.getIcon());
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			SimpleChatFrameClient.this.sendMessage(1);
+		}
+
+		private Icon getIcon() {
+			return new ImageIcon(SimpleChatFrameClient.class.getResource("send_16_16.jpg")); //$NON-NLS-1$
+		}
+	}
+
+	private abstract class ResourceAction extends AbstractAction {
+		public ResourceAction() {
+		}
+	}
+
+	private class SendAction extends ResourceAction {
+		public SendAction() {
+			this.putValue(NAME, Messages.getString("SimpleChatFrameClient.3")); //$NON-NLS-1$
+			this.putValue(SHORT_DESCRIPTION, Messages.getString("SimpleChatFrameClient.2")); //$NON-NLS-1$
+			this.putValue(SMALL_ICON, this.getIcon());
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			SimpleChatFrameClient.this.sendMessage(0);
+		}
+
+		private Icon getIcon() {
+			return new ImageIcon(SimpleChatFrameClient.class.getResource("send_16_16.jpg")); //$NON-NLS-1$
+		}
+	}
+
 	private static Document documentModel;
 	private static ListModel<String> listModel;
-	private DefaultListSalonModel salonListModel;
-	IfSenderModel sender;
-	private String senderName;
-	private String nouveauNomSalonSaisi = "";
-	private JPanel contentPane;
-	private JPanel panelPiedPage;
-	private JTextField textField;
-	private JLabel lblSender;
-	private JTabbedPane tabbedPaneSalon;
-	private final ResourceAction sendAction = new SendAction();
-	private final ResourceAction newSalondAction = new NewSalonAction();
-	private final ResourceAction closeSalonAction = new CloseSalonAction();
-	private final ResourceAction lockAction = new LockAction();
 
-	private boolean isScrollLocked = true;
-	private String salonName;
-	private AddNewSalonFrame newSalonFrame;
-	JTextField txtCrerUnSalon;
-	// private JTextField textField_NewSalon;
+	private static void addPopup(Component component, final JPopupMenu popup) {
+		component.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					this.showMenu(e);
+				}
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					this.showMenu(e);
+				}
+			}
+
+			private void showMenu(MouseEvent e) {
+				popup.show(e.getComponent(), e.getX(), e.getY());
+			}
+		});
+	}
 
 	/**
 	 * Launch the application.
-	 * 
+	 *
 	 * @throws BadLocationException
 	 */
 	public static void main(String[] args) throws BadLocationException {
 		EventQueue.invokeLater(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					SimpleChatFrameClient frame = new SimpleChatFrameClient();
@@ -122,23 +191,37 @@ public class SimpleChatFrameClient extends JFrame {
 		}
 	}
 
-	public void sendMessage(int actionToPerform) {
-		switch (actionToPerform) {
-		case 0:// On envoie un message
-			sender.setMsgToSend(textField.getText(), 0,"", "","");
-			break;
-		case 1:// On veut un nouveau salon
-			sender.setMsgToSend("Création d'un salon", 0,nouveauNomSalonSaisi,ClientServerProtocol.NVSALON,"");
-			break;
+	private DefaultListSalonModel salonListModel;
+	IfSenderModel sender;
+	private String senderName;
+	private String nouveauNomSalonSaisi = "";
+	private JPanel contentPane;
 
-		case 2:// On ferme le salon
-			sender.setMsgToSend("Fermeture du salon",0,"",ClientServerProtocol.QUITSALON,"");
-			break;	
-		default:
-			break;
-		} 
-		
-	}
+	private JPanel panelPiedPage;
+	private JTextField textField;
+	private JLabel lblSender;
+	private JTabbedPane tabbedPaneSalon;
+
+	private final ResourceAction sendAction = new SendAction();
+
+	private final ResourceAction newSalondAction = new NewSalonAction();
+
+	private final ResourceAction closeSalonAction = new CloseSalonAction();
+
+	private final ResourceAction lockAction = new LockAction();
+
+	private boolean isScrollLocked = true;
+
+	private String salonName;
+	private SalonLst listSalon = new SalonLst();
+
+	// public void createOngletSalon(Document documentModel, String salonName)
+	// {}
+
+	private AddNewSalonFrame newSalonFrame;
+
+	JTextField txtCrerUnSalon;
+	// private JTextField textField_NewSalon;
 
 	public SimpleChatFrameClient() {
 		this(null, new DefaultListModel<String>(), SimpleChatClientApp.defaultDocumentModel(),
@@ -157,144 +240,189 @@ public class SimpleChatFrameClient extends JFrame {
 		this.salonListModel = salonListModel;
 		this.salonListModel.addObserver(this);
 
-		newSalonFrame= new AddNewSalonFrame();
-		newSalonFrame.setVisible(false);
-		
-		setTitle(Messages.getString("SimpleChatFrameClient.4")); //$NON-NLS-1$
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 545, 300);
+		this.newSalonFrame = new AddNewSalonFrame();
+		this.newSalonFrame.setVisible(false);
+
+		this.setTitle(Messages.getString("SimpleChatFrameClient.4")); //$NON-NLS-1$
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setBounds(100, 100, 545, 300);
 		/**
 		 * Create menuBar
 		 */
 		JMenuBar menuBar = new JMenuBar();
-		setJMenuBar(menuBar);
-		creationMenuFichier(menuBar);
-		creationMenuOutils(menuBar);
-		creationMenuSalon(menuBar);
+		this.setJMenuBar(menuBar);
+		this.creationMenuFichier(menuBar);
+		this.creationMenuOutils(menuBar);
+		this.creationMenuSalon(menuBar);
 		/**
 		 * Ajout Onglet pour Salon
 		 */
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		contentPane.setLayout(new BorderLayout(0, 0));
-		setContentPane(contentPane);
+		this.contentPane = new JPanel();
+		this.contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		this.contentPane.setLayout(new BorderLayout(0, 0));
+		this.setContentPane(this.contentPane);
 
-		tabbedPaneSalon = new JTabbedPane(JTabbedPane.TOP);
+		this.tabbedPaneSalon = new JTabbedPane(JTabbedPane.TOP);
 
 		// tabbedPaneSalon.setToolTipText(Messages.getString("SimpleChatFrameClient.tabbedPane.toolTipText"));
 		// //$NON-NLS-1$
-		contentPane.add(tabbedPaneSalon, BorderLayout.CENTER);
+		this.contentPane.add(this.tabbedPaneSalon, BorderLayout.CENTER);
 
 		// On examine le contenu de salonListModel :
 		if (salonListModel.getSize() > 0) { // S'il y a des salons
 			for (int i = 0; i < salonListModel.getSize(); i++) {
 				// On crée un onglet par salon
 				Salon salon = salonListModel.getElementAt(i);
-				createOngletSalon(documentModel, tabbedPaneSalon, salon);
+				this.createOngletSalon(documentModel, this.tabbedPaneSalon, salon, new DefaultListModel<String>() );
 			}
 		} else { // Pas de salon au lancement : on en crée un onglet par défaut,
-					// on l'ajoute à la liste et on ouvre un onglet
-			Salon salon = new Salon(SalonLst.DEFAULT_SALON_NAME, SalonLst.DEFAULT_SALON_NOT_PRIVACY);
+			// on l'ajoute à la liste et on ouvre un onglet
+			Salon salon = new Salon(SalonLst.DEFAULT_SALON_NAME, SalonLst.DEFAULT_SALON_NOT_PRIVACY, SalonLst.DEFAULT_SALON_ID);
 			salonListModel.addElement(salon);
-			createOngletSalon(documentModel, tabbedPaneSalon, salon);
+			this.createOngletSalon(documentModel, this.tabbedPaneSalon, salon, clientListModel);
 		}
 
 		JToolBar toolBar = new JToolBar();
-        contentPane.add(toolBar, BorderLayout.NORTH);
+		this.contentPane.add(toolBar, BorderLayout.NORTH);
 
-        JButton button = toolBar.add(sendAction);
-        
-                Label label = new Label(Messages.getString("SimpleChatFrameClient.label.text")); //$NON-NLS-1$
-                label.setAlignment(Label.RIGHT);
-                toolBar.add(label);
-        
-        txtCrerUnSalon = new JTextField();
-        txtCrerUnSalon.setFont(txtCrerUnSalon.getFont().deriveFont(txtCrerUnSalon.getFont().getStyle() | Font.ITALIC, 9f));
-        //txtCrerUnSalon.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
-        //        Messages.getString(salonName);
+		JButton button = toolBar.add(this.sendAction);
 
-        toolBar.add(txtCrerUnSalon);
-        txtCrerUnSalon.setColumns(10);
-        
-        JButton btnNewButton = new JButton(newSalondAction);
-        btnNewButton.setText("Nouveau salon"); //$NON-NLS-1$
-        btnNewButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-    
-            	nouveauNomSalonSaisi = txtCrerUnSalon.getText();
-            }
-        });
-        toolBar.add(btnNewButton);
-				// On met en place la Combo Box pour le choix du Salon
-//		Choice choiceSalon = new Choice();
-		//toolBar.add(choiceSalon);
+		Label label = new Label(Messages.getString("SimpleChatFrameClient.label.text")); //$NON-NLS-1$
+		label.setAlignment(Label.RIGHT);
+		toolBar.add(label);
+
+		this.txtCrerUnSalon = new JTextField();
+		this.txtCrerUnSalon.setFont(
+				this.txtCrerUnSalon.getFont().deriveFont(this.txtCrerUnSalon.getFont().getStyle() | Font.ITALIC, 9f));
+		// txtCrerUnSalon.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,
+		// 0),
+		// Messages.getString(salonName);
+
+		toolBar.add(this.txtCrerUnSalon);
+		this.txtCrerUnSalon.setColumns(10);
+
+		JButton btnNewButton = new JButton(this.newSalondAction);
+		btnNewButton.setText("Nouveau salon"); //$NON-NLS-1$
+		btnNewButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+
+				SimpleChatFrameClient.this.nouveauNomSalonSaisi = SimpleChatFrameClient.this.txtCrerUnSalon.getText();
+			}
+		});
+		toolBar.add(btnNewButton);
+		// On met en place la Combo Box pour le choix du Salon
+		// Choice choiceSalon = new Choice();
+		// toolBar.add(choiceSalon);
 		// doit afficher la liste des salons
-		//SCLU
-//		JComboBox choixSalon=new JComboBox();
-//		toolBar.add(choixSalon);
+		// SCLU
+		// JComboBox choixSalon=new JComboBox();
+		// toolBar.add(choixSalon);
 
-		panelPiedPage = new JPanel();
-		contentPane.add(panelPiedPage, BorderLayout.SOUTH);
-		panelPiedPage.setLayout(new BorderLayout(0, 0));
+		this.panelPiedPage = new JPanel();
+		this.contentPane.add(this.panelPiedPage, BorderLayout.SOUTH);
+		this.panelPiedPage.setLayout(new BorderLayout(0, 0));
 		JPanel panel = new JPanel();
-		panelPiedPage.add(panel);
+		this.panelPiedPage.add(panel);
 
 		// zone de gestion des messages
-		lblSender = new JLabel("?"); //$NON-NLS-1$
-		lblSender.setHorizontalAlignment(SwingConstants.RIGHT);
-		lblSender.setHorizontalTextPosition(SwingConstants.CENTER);
-		lblSender.setPreferredSize(new Dimension(100, 14));
-		lblSender.setMinimumSize(new Dimension(100, 14));
+		this.lblSender = new JLabel("?"); //$NON-NLS-1$
+		this.lblSender.setHorizontalAlignment(SwingConstants.RIGHT);
+		this.lblSender.setHorizontalTextPosition(SwingConstants.CENTER);
+		this.lblSender.setPreferredSize(new Dimension(100, 14));
+		this.lblSender.setMinimumSize(new Dimension(100, 14));
 
-		textField = new JTextField();
-		textField.setHorizontalAlignment(SwingConstants.LEFT);
-		textField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
+		this.textField = new JTextField();
+		this.textField.setHorizontalAlignment(SwingConstants.LEFT);
+		this.textField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
 				Messages.getString("SimpleChatFrameClient.12")); //$NON-NLS-1$
-		textField.getActionMap().put(Messages.getString("SimpleChatFrameClient.13"), sendAction); //$NON-NLS-1$
+		this.textField.getActionMap().put(Messages.getString("SimpleChatFrameClient.13"), this.sendAction); //$NON-NLS-1$
 
-		JButton btnSend = new JButton(sendAction);
+		JButton btnSend = new JButton(this.sendAction);
 		btnSend.setMnemonic(KeyEvent.VK_ENTER);
 		GroupLayout gl_panel = new GroupLayout(panel);
 		gl_panel.setHorizontalGroup(gl_panel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panel.createSequentialGroup()
-						.addComponent(lblSender, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+						.addComponent(this.lblSender, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 								GroupLayout.PREFERRED_SIZE)
 						.addPreferredGap(ComponentPlacement.RELATED)
-						.addComponent(textField, GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+						.addComponent(this.textField, GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
 						.addPreferredGap(ComponentPlacement.RELATED).addComponent(btnSend)));
 		gl_panel.setVerticalGroup(gl_panel.createParallelGroup(Alignment.LEADING).addGroup(gl_panel
 				.createSequentialGroup().addGap(10)
 				.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(textField, GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
-						.addComponent(lblSender, GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
+						.addComponent(this.textField, GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
+						.addComponent(this.lblSender, GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
 						.addComponent(btnSend, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))));
 		panel.setLayout(gl_panel);
 
 	}
 
-	public void createOngletSalon(Document documentModel, JTabbedPane tabbedPaneSalon, Salon salon) {
+
+
+	public void addSalon(EventSalonADD event) {
+		System.out.println("Ajout du salon :" + event.getSalon().getNomSalon());
+		this.createOngletSalon(new DefaultStyledDocument(), this.tabbedPaneSalon, event.getSalon(),
+				new DefaultListModel<String>());
+		this.listSalon.createOrRetrieveSalon(event.getSalon().getNomSalon(),SalonLst.DEFAULT_SALON_NOT_PRIVACY);
+	}
+
+	public void createOngletSalon(Document documentModel, JTabbedPane tabbedPaneSalon, Salon salon, ListModel<String> clientListModel) {
 
 		JPanel panelSalon = new JPanel();
+		tabbedPaneSalon.addMouseListener(new MouseListener(){
 
-		salonName = salon.getNomSalon();
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				// On mets à jour le nom du salon actif quand on change d'onglet => Libellé devant la zone de saisie
+				SimpleChatFrameClient.this.lblSender.setText(tabbedPaneSalon.getSelectedComponent().getName());
+			}
 
-		tabbedPaneSalon.addTab(salonName.toString(), null, panelSalon, null);
+			@Override
+			public void mouseEntered(MouseEvent e) {
+
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+		});
+
+		// On mets à jour le nom du salon dans l'onglet et dans le libellé devant la zonbe de saisie (Création de l'onglet)
+		this.salonName = salon.getNomSalon();
+		panelSalon.setName(salon.getNomSalon());
+
+		tabbedPaneSalon.addTab(this.salonName.toString(), null, panelSalon, null);
 
 		panelSalon.setLayout(new BorderLayout(0, 0));
 
 		JSplitPane splitPane = new JSplitPane();
 		panelSalon.add(splitPane, BorderLayout.CENTER);
 
-		JList<String> list = new JList<String>(listModel);
+		JList<String> list = new JList<String>(clientListModel);
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.addListSelectionListener(new ListSelectionListener() {
+			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				int iFirstSelectedElement = ((JList) e.getSource()).getSelectedIndex();
-				if (iFirstSelectedElement >= 0 && iFirstSelectedElement < listModel.getSize()) {
-					senderName = listModel.getElementAt(iFirstSelectedElement);
-					getLblSender().setText(senderName);
+				if ((iFirstSelectedElement >= 0) && (iFirstSelectedElement < clientListModel.getSize())) {
+					SimpleChatFrameClient.this.senderName = clientListModel.getElementAt(iFirstSelectedElement);
+					SimpleChatFrameClient.this.getLblSender().setText(SimpleChatFrameClient.this.senderName);
 				} else {
-					getLblSender().setText("?"); //$NON-NLS-1$
+					SimpleChatFrameClient.this.getLblSender().setText("?"); //$NON-NLS-1$
 				}
 			}
 		});
@@ -309,19 +437,19 @@ public class SimpleChatFrameClient extends JFrame {
 		addPopup(textArea, popupMenu);
 
 		JCheckBoxMenuItem chckbxmntmLock = new JCheckBoxMenuItem(Messages.getString("SimpleChatFrameClient.10")); //$NON-NLS-1$
-		chckbxmntmLock.setEnabled(isScrollLocked);
+		chckbxmntmLock.setEnabled(this.isScrollLocked);
 		popupMenu.add(chckbxmntmLock);
 
 		JCheckBoxMenuItem chckbxmntmFermerSalon = new JCheckBoxMenuItem(
 				Messages.getString("SimpleChatFrameClient.chckbxmntmNewCheckItem_1.text")); //$NON-NLS-1$
 		popupMenu.add(chckbxmntmFermerSalon);
-		chckbxmntmLock.addActionListener(lockAction);
+		chckbxmntmLock.addActionListener(this.lockAction);
 
 		scrollPaneText.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
 
 			@Override
 			public void adjustmentValueChanged(AdjustmentEvent e) {
-				if (isScrollLocked) {
+				if (SimpleChatFrameClient.this.isScrollLocked) {
 					e.getAdjustable().setValue(e.getAdjustable().getMaximum());
 				}
 			}
@@ -330,8 +458,29 @@ public class SimpleChatFrameClient extends JFrame {
 		splitPane.setRightComponent(scrollPaneText);
 	}
 
-	// public void createOngletSalon(Document documentModel, String salonName)
-	// {}
+	public void creationMenuFichier(JMenuBar menuBar) {
+		JMenu mnFile = new JMenu(Messages.getString("SimpleChatFrameClient.5")); //$NON-NLS-1$
+		mnFile.setMnemonic('F');
+		menuBar.add(mnFile);
+
+		JMenuItem mntmEnregistrerSous = new JMenuItem(Messages.getString("SimpleChatFrameClient.6")); //$NON-NLS-1$
+		mnFile.add(mntmEnregistrerSous);
+	}
+
+	public void creationMenuOutils(JMenuBar menuBar) {
+		JMenu mnOutils = new JMenu(Messages.getString("SimpleChatFrameClient.7")); //$NON-NLS-1$
+		mnOutils.setMnemonic('O');
+		menuBar.add(mnOutils);
+
+		JMenuItem mntmEnvoyer = new JMenuItem(Messages.getString("SimpleChatFrameClient.8")); //$NON-NLS-1$
+		mntmEnvoyer.setAction(this.sendAction);
+		mnOutils.add(mntmEnvoyer);
+
+		JSeparator separator = new JSeparator();
+		mnOutils.add(separator);
+		JCheckBoxMenuItem chckbxmntmNewCheckItem = new JCheckBoxMenuItem(this.lockAction);
+		mnOutils.add(chckbxmntmNewCheckItem);
+	}
 
 	public void creationMenuSalon(JMenuBar menuBar) {
 		JMenu mnSalon;
@@ -350,148 +499,57 @@ public class SimpleChatFrameClient extends JFrame {
 		 * Ouvrir fenêtre création salon
 		 */
 		JMenuItem mntmCreateSalon = new JMenuItem(Messages.getString("SimpleChatFrameClient.mntmCrerUnNouveau.text")); //$NON-NLS-1$
-		
-//		mntmCreateSalon.addFocusListener(new FocusAdapter() {
-//			@Override
-//			public void focusGained(FocusEvent e) {
-//			}
-//		});
-//		mntmCreateSalon.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				newSalonFrame.setVisible(true);
-//				nouveauNomSalonSaisi = newSalonFrame.newSalon;
-//				System.out.println("Nom du nouveau salon demandé : " + nouveauNomSalonSaisi);
-//			}
-//		});
 
-		mntmCreateSalon.setAction(newSalondAction);
+		// mntmCreateSalon.addFocusListener(new FocusAdapter() {
+		// @Override
+		// public void focusGained(FocusEvent e) {
+		// }
+		// });
+		// mntmCreateSalon.addActionListener(new ActionListener() {
+		// public void actionPerformed(ActionEvent e) {
+		// newSalonFrame.setVisible(true);
+		// nouveauNomSalonSaisi = newSalonFrame.newSalon;
+		// System.out.println("Nom du nouveau salon demandé : " +
+		// nouveauNomSalonSaisi);
+		// }
+		// });
+
+		mntmCreateSalon.setAction(this.newSalondAction);
 		mnSalon.add(mntmCreateSalon);
-		
+
 		JMenuItem mntmFermerSalon = new JMenuItem(Messages.getString("SimpleChatFrameClient.mntmNewMenuItem.text")); //$NON-NLS-1$
-		mntmFermerSalon.setAction(closeSalonAction);
+		mntmFermerSalon.setAction(this.closeSalonAction);
 		mnSalon.add(mntmFermerSalon);
 	}
 
-	public void creationMenuOutils(JMenuBar menuBar) {
-		JMenu mnOutils = new JMenu(Messages.getString("SimpleChatFrameClient.7")); //$NON-NLS-1$
-		mnOutils.setMnemonic('O');
-		menuBar.add(mnOutils);
-
-		JMenuItem mntmEnvoyer = new JMenuItem(Messages.getString("SimpleChatFrameClient.8")); //$NON-NLS-1$
-		mntmEnvoyer.setAction(sendAction);
-		mnOutils.add(mntmEnvoyer);
-
-		JSeparator separator = new JSeparator();
-		mnOutils.add(separator);
-		JCheckBoxMenuItem chckbxmntmNewCheckItem = new JCheckBoxMenuItem(lockAction);
-		mnOutils.add(chckbxmntmNewCheckItem);
-	}
-
-	public void creationMenuFichier(JMenuBar menuBar) {
-		JMenu mnFile = new JMenu(Messages.getString("SimpleChatFrameClient.5")); //$NON-NLS-1$
-		mnFile.setMnemonic('F');
-		menuBar.add(mnFile);
-
-		JMenuItem mntmEnregistrerSous = new JMenuItem(Messages.getString("SimpleChatFrameClient.6")); //$NON-NLS-1$
-		mnFile.add(mntmEnregistrerSous);
-	}
-
 	public JLabel getLblSender() {
-		return lblSender;
+		return this.lblSender;
 	}
 
-	private abstract class ResourceAction extends AbstractAction {
-		public ResourceAction() {
+	public void sendMessage(int actionToPerform) {
+		String nomSalonEncours = this.getLblSender().getText();
+		int idSalonEncours = this.listSalon.retrieveIdSalon(nomSalonEncours);
+		switch (actionToPerform) {
+		case 0:// On envoie un message
+			this.sender.setMsgToSend(this.textField.getText(), idSalonEncours, "", "", "");
+			break;
+		case 1:// On veut un nouveau salon
+			this.sender.setMsgToSend("Création d'un salon", idSalonEncours, this.nouveauNomSalonSaisi, ClientServerProtocol.NVSALON,
+					"");
+			break;
+
+		case 2:// On ferme le salon
+			this.sender.setMsgToSend("Fermeture du salon", idSalonEncours, "", ClientServerProtocol.QUITSALON, "");
+			break;
+		default:
+			break;
 		}
+
 	}
 
-	private class SendAction extends ResourceAction {
-		private Icon getIcon() {
-			return new ImageIcon(SimpleChatFrameClient.class.getResource("send_16_16.jpg")); //$NON-NLS-1$
-		}
-
-		public SendAction() {
-			putValue(NAME, Messages.getString("SimpleChatFrameClient.3")); //$NON-NLS-1$
-			putValue(SHORT_DESCRIPTION, Messages.getString("SimpleChatFrameClient.2")); //$NON-NLS-1$
-			putValue(SMALL_ICON, getIcon());
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			sendMessage(0);
-		}
-	}
-
-	private class NewSalonAction extends ResourceAction {
-		private Icon getIcon() {
-			return new ImageIcon(SimpleChatFrameClient.class.getResource("send_16_16.jpg")); //$NON-NLS-1$
-		}
-
-		public NewSalonAction() {
-			putValue(NAME, Messages.getString("SimpleChatFrameClient.9")); //$NON-NLS-1$
-			putValue(SHORT_DESCRIPTION, Messages.getString("SimpleChatFrameClient.14")); //$NON-NLS-1$
-			putValue(SMALL_ICON, getIcon());
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			sendMessage(1);
-		}
-	}
-	private class CloseSalonAction extends ResourceAction {
-		private Icon getIcon() {
-			return new ImageIcon(SimpleChatFrameClient.class.getResource("send_16_16.jpg")); //$NON-NLS-1$
-		}
-
-		public CloseSalonAction() {
-			putValue(NAME, Messages.getString("SimpleChatFrameClient.11")); //$NON-NLS-1$
-			putValue(SHORT_DESCRIPTION, Messages.getString("SimpleChatFrameClient.15")); //$NON-NLS-1$
-			putValue(SMALL_ICON, getIcon());
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			sendMessage(2);
-		}
-	}
-	
-	
-	private class LockAction extends ResourceAction {
-		public LockAction() {
-			putValue(NAME, Messages.getString("SimpleChatFrameClient.1")); //$NON-NLS-1$
-			putValue(SHORT_DESCRIPTION, Messages.getString("SimpleChatFrameClient.0")); //$NON-NLS-1$
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			isScrollLocked = (!isScrollLocked);
-		}
-	}
-
-	private static void addPopup(Component component, final JPopupMenu popup) {
-		component.addMouseListener(new MouseAdapter() {
-			public void mousePressed(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
-				}
-			}
-
-			public void mouseReleased(MouseEvent e) {
-				if (e.isPopupTrigger()) {
-					showMenu(e);
-				}
-			}
-
-			private void showMenu(MouseEvent e) {
-				popup.show(e.getComponent(), e.getX(), e.getY());
-			}
-		});
-	}
-	
-	public void addSalon(EventSalonADD event){
-		System.out.println("Ajout du salon :" + event.getSalon().getNomSalon());
-		createOngletSalon(new DefaultStyledDocument(), tabbedPaneSalon, event.getSalon());
-	}
-	
-	public void supprSalon(EventSalonSUPPR event){
+	public void supprSalon(EventSalonSUPPR event) {
 		System.out.println("Suppression du salon :" + event.getSalon().getNomSalon());
-		
+
 	}
-	
+
 }

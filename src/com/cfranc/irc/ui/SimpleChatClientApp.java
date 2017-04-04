@@ -22,32 +22,18 @@ import javax.swing.text.StyledDocument;
 
 import com.cfranc.irc.client.ClientToServerThread;
 import com.cfranc.irc.client.DefaultListSalonModel;
+import com.cfranc.irc.server.SalonLst;
 
 public class SimpleChatClientApp implements Observer {
 	static String[] ConnectOptionNames = { "Connect" };
 	static String ConnectTitle = "Connection Information";
-	Socket socketClientServer;
-	int serverPort;
-	String serverName;
-	String clientName;
-	String clientPwd;
-
-	private SimpleChatFrameClient frame;
-	public StyledDocument documentModel = new DefaultStyledDocument();
-	DefaultListModel<String> clientListModel = new DefaultListModel<String>();
-	DefaultListSalonModel salonListModel = new DefaultListSalonModel();
-
-	// HashMap pour chaque salon de ces éléments
-	// le bouton envoyer devra récupérer le salon actif pour savoir sur lequel
-	// envoyer
-
 	public static final String BOLD_ITALIC = "BoldItalic";
 	public static final String GRAY_PLAIN = "Gray";
-
+	private static ClientToServerThread clientToServerThread;
 	public static DefaultStyledDocument defaultDocumentModel() {
 		DefaultStyledDocument res = new DefaultStyledDocument();
 
-		Style styleDefault = (Style) res.getStyle(StyleContext.DEFAULT_STYLE);
+		Style styleDefault = res.getStyle(StyleContext.DEFAULT_STYLE);
 
 		res.addStyle(BOLD_ITALIC, styleDefault);
 		Style styleBI = res.getStyle(BOLD_ITALIC);
@@ -63,108 +49,13 @@ public class SimpleChatClientApp implements Observer {
 
 		return res;
 	}
-
-	private static ClientToServerThread clientToServerThread;
-
-	public SimpleChatClientApp() {
-
-	}
-
-	public void displayClient() {
-
-		// Init GUI
-		this.frame = new SimpleChatFrameClient(clientToServerThread, clientListModel, documentModel, salonListModel);
-		this.frame.setTitle(
-				this.frame.getTitle() + " : " + clientName + " connected to " + serverName + ":" + serverPort);
-		((JFrame) this.frame).setVisible(true);
-		this.frame.addWindowListener(new WindowListener() {
-
-			@Override
-			public void windowOpened(WindowEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void windowIconified(WindowEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void windowDeiconified(WindowEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void windowDeactivated(WindowEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-
-			public void windowClosing(WindowEvent e) {
-				quitApp(SimpleChatClientApp.this);
-			}
-
-			@Override
-			public void windowClosed(WindowEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void windowActivated(WindowEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-		});
-	}
-
-	public void hideClient() {
-
-		// Init GUI
-		((JFrame) this.frame).setVisible(false);
-	}
-
-	void displayConnectionDialog() {
-		ConnectionPanel connectionPanel = new ConnectionPanel();
-		if (JOptionPane.showOptionDialog(null, connectionPanel, ConnectTitle, JOptionPane.DEFAULT_OPTION,
-				JOptionPane.QUESTION_MESSAGE, null, ConnectOptionNames, ConnectOptionNames[0]) == 0) {
-			serverPort = Integer.parseInt(connectionPanel.getServerPortField().getText());
-			serverName = connectionPanel.getServerField().getText();
-			clientName = connectionPanel.getUserNameField().getText();
-			clientPwd = connectionPanel.getPasswordField().getText();
-		}
-	}
-
-	private void connectClient() {
-		System.out.println("Establishing connection. Please wait ...");
-		try {
-			socketClientServer = new Socket(this.serverName, this.serverPort);
-			// Start connection services
-
-			clientToServerThread = new ClientToServerThread(documentModel, clientListModel, socketClientServer,
-					clientName, clientPwd, salonListModel);
-
-			clientToServerThread.start();
-
-			System.out.println("Connected: " + socketClientServer);
-		} catch (UnknownHostException uhe) {
-			System.out.println("Host unknown: " + uhe.getMessage());
-		} catch (IOException ioe) {
-			System.out.println("Unexpected exception: " + ioe.getMessage());
-		}
-	}
-
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
 		final SimpleChatClientApp app = new SimpleChatClientApp();
 		EventQueue.invokeLater(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					app.displayConnectionDialog();
@@ -190,7 +81,6 @@ public class SimpleChatClientApp implements Observer {
 		quitApp(app);
 
 	}
-
 	private static void quitApp(final SimpleChatClientApp app) {
 		try {
 			SimpleChatClientApp.clientToServerThread.quitServer();
@@ -200,6 +90,119 @@ public class SimpleChatClientApp implements Observer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	Socket socketClientServer;
+	int serverPort;
+	String serverName;
+	String clientName;
+
+	// HashMap pour chaque salon de ces éléments
+	// le bouton envoyer devra récupérer le salon actif pour savoir sur lequel
+	// envoyer
+
+	String clientPwd;
+	int idSalonActif = SalonLst.DEFAULT_SALON_ID;
+
+	private SimpleChatFrameClient frame;
+
+	public StyledDocument documentModel = new DefaultStyledDocument();
+
+	DefaultListModel<String> clientListModel = new DefaultListModel<String>();
+
+	DefaultListSalonModel salonListModel = new DefaultListSalonModel();
+
+	public SimpleChatClientApp() {
+
+	}
+
+	private void connectClient() {
+		System.out.println("Establishing connection. Please wait ...");
+		try {
+			this.socketClientServer = new Socket(this.serverName, this.serverPort);
+			// Start connection services
+
+			clientToServerThread = new ClientToServerThread(this.documentModel, this.clientListModel, this.socketClientServer,
+					this.clientName, this.clientPwd, this.salonListModel);
+
+			clientToServerThread.start();
+
+			System.out.println("Connected: " + this.socketClientServer);
+		} catch (UnknownHostException uhe) {
+			System.out.println("Host unknown: " + uhe.getMessage());
+		} catch (IOException ioe) {
+			System.out.println("Unexpected exception: " + ioe.getMessage());
+		}
+	}
+
+	public void displayClient() {
+
+		// Init GUI
+		this.frame = new SimpleChatFrameClient(clientToServerThread, this.clientListModel, this.documentModel, this.salonListModel);
+		this.frame.setTitle(
+				this.frame.getTitle() + " : " + this.clientName + " connected to " + this.serverName + ":" + this.serverPort);
+		((JFrame) this.frame).setVisible(true);
+		this.frame.addWindowListener(new WindowListener() {
+
+			@Override
+			public void windowActivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void windowClosed(WindowEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+
+			public void windowClosing(WindowEvent e) {
+				quitApp(SimpleChatClientApp.this);
+			}
+
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void windowDeiconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void windowIconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void windowOpened(WindowEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+		});
+	}
+
+	void displayConnectionDialog() {
+		ConnectionPanel connectionPanel = new ConnectionPanel();
+		if (JOptionPane.showOptionDialog(null, connectionPanel, ConnectTitle, JOptionPane.DEFAULT_OPTION,
+				JOptionPane.QUESTION_MESSAGE, null, ConnectOptionNames, ConnectOptionNames[0]) == 0) {
+			this.serverPort = Integer.parseInt(connectionPanel.getServerPortField().getText());
+			this.serverName = connectionPanel.getServerField().getText();
+			this.clientName = connectionPanel.getUserNameField().getText();
+			this.clientPwd = connectionPanel.getPasswordField().getText();
+		}
+	}
+
+	public void hideClient() {
+
+		// Init GUI
+		((JFrame) this.frame).setVisible(false);
 	}
 
 	@Override
