@@ -32,8 +32,9 @@ public class BroadcastThread extends Thread {
 		return res;
 	}
 
-	public static boolean addClient(int idSalon, User user, ServerToClientThread serverToClientThread) {
-		boolean res = true;
+	public static boolean addClient(int idSalon, User user, ServerToClientThread serverToClientThread,
+			boolean isUserToBeAddedToThread) {
+		boolean res;
 		// Nouveau protocole :
 		String line;
 		String msg = "";
@@ -42,18 +43,29 @@ public class BroadcastThread extends Thread {
 		String nomSalon = mySalons.getSalonName(idSalon);
 		String nomRecepteur = "";
 		int nouveauIdSalon = SalonLst.DEFAULT_SALON_ID;
-		// On récupère le clientTreadsMap lié au salon
 
+		// On récupère le clientTreadsMap lié au salon
 		HashMap<User, ServerToClientThread> clientTreadsMap = createOrRetrieveClientTreadsMapByIdSalon(idSalon, user,
 				serverToClientThread);
 
-		if (clientTreadsMap.containsKey(user)) {
-			res = false;
-		} else {
-			// On rajoute l'utilisateur à la liste des utilisateurs connectés
-			if (!listConnextedUser.contains(user.getLogin())) {
-				listConnextedUser.add(user.getLogin());
+		// Si on doit vérifier que l'utilisateur est bien dans le thread :
+		if (isUserToBeAddedToThread) {
+			if (clientTreadsMap.containsKey(user)) {
+				res = false; // On stoppe le traitement, l'utilisateur fait déjà partie du Thread
+			} else {
+				res = true; // On continue le traitement : Il faut ajouter l'utilisateur d'abord au Thread
+				if (!listConnextedUser.contains(user.getLogin())) {
+					listConnextedUser.add(user.getLogin());
+				}
 			}
+		} else { // Si aucune vérification => On continue le traitement sans ajouter l'utilisateur au Thread
+			res = true;
+		}
+
+		// Si res = true, on est autorisé à continuer
+		if (res) {
+			// On rajoute l'utilisateur à la liste des utilisateurs connectés
+
 
 			// clientTreadsMap.put(user, serverToClientThread);
 			// modifs du 03/11 : ajout de tous les users à la liste des users
@@ -97,7 +109,7 @@ public class BroadcastThread extends Thread {
 			String nomSalon, String recepteur, int nouveauIdSalon) {
 		// On parcoure la liste des utilisateurs connectés
 		for (String connectedUsername : listConnextedUser) {
-			if (!connectedUsername.equals(user.getLogin())){
+			if (!connectedUsername.equals(user.getLogin())) {
 				User connectedUser = new User(connectedUsername, "", idSalon);
 				sendMessage(connectedUser, pwd, msg, commande, idSalon, nomSalon, recepteur, nouveauIdSalon);
 			}
@@ -129,7 +141,6 @@ public class BroadcastThread extends Thread {
 		sendMessage(recepteurUser, pwd, msg, commande, idSalon, user.getLogin(), "", nouveauIdSalon);
 	}
 
-
 	/***
 	 * Gestion d'une demande de création de salon publique (Tout le monde peut y
 	 * accèder)
@@ -149,9 +160,12 @@ public class BroadcastThread extends Thread {
 		// On récupère le Thread existant
 		HashMap<User, ServerToClientThread> HashEnCours = getClientTreadsMap(idSalon);
 		// Puis on l'affecte au nouveau salon
-		HashMap<User, ServerToClientThread> HashDuSalon = createOrRetrieveClientTreadsMapByIdSalon(nouveauIdSalon, user, HashEnCours.get(user));
+		HashMap<User, ServerToClientThread> HashDuSalon = createOrRetrieveClientTreadsMapByIdSalon(nouveauIdSalon, user,
+				HashEnCours.get(user));
 		// on renvoie le message avec l'idSalon à tout le monde
 		broadCastMessage(user, pwd, msg, commande, idSalon, nomSalon, recepteur, nouveauIdSalon);
+		// On ajoute le user créant le salon au salon mais sans s'ajouter au Thread:
+		addClient(nouveauIdSalon, user, HashEnCours.get(user), false);
 	}
 
 	/**
@@ -177,6 +191,7 @@ public class BroadcastThread extends Thread {
 		} else // On ajoute le idsalon et le Thread au nouveau HashMap<User,
 			// ServerToClientThread>
 		{
+			clientTreadsMap.put(user, serverToClientThread);
 			salon_ClientTreadsMap.put(new Integer(idSalon), clientTreadsMap);
 		}
 
@@ -228,7 +243,8 @@ public class BroadcastThread extends Thread {
 	}
 
 	/***
-	 * Gestion d'une demande de suppression de salon (qu'il soit public ou privé)
+	 * Gestion d'une demande de suppression de salon (qu'il soit public ou
+	 * privé)
 	 *
 	 * @param user
 	 * @param pwd

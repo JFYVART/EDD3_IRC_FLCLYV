@@ -20,50 +20,17 @@ public class ClientConnectThread extends Thread {
 
 	private ServerSocket server = null;
 
-	private void printMsg(String msg) {
-		try {
-			if (model != null) {
-				model.insertString(model.getLength(), msg + "\n", null);
-			}
-			System.out.println(msg);
-		} catch (BadLocationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
 	public ClientConnectThread(int port, StyledDocument model, DefaultListModel<String> clientListModel,
 			SalonLst mySalons) {
 		try {
 			this.model = model;
 			this.clientListModel = clientListModel;
-			printMsg("Binding to port " + port + ", please wait  ...");
-			server = new ServerSocket(port);
+			this.printMsg("Binding to port " + port + ", please wait  ...");
+			this.server = new ServerSocket(port);
 			BroadcastThread.mySalons = mySalons;
-			printMsg("Server started: " + server);
+			this.printMsg("Server started: " + this.server);
 		} catch (IOException ioe) {
 			System.out.println(ioe);
-		}
-	}
-
-	@Override
-	public void run() {
-		while (!canStop) {
-			printMsg("Waiting for a client ...");
-			Socket socket;
-			try {
-				socket = server.accept();
-				printMsg("Client accepted: " + socket);
-
-				// Accept new client or close the socket
-				acceptClient(socket);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 	}
 
@@ -97,10 +64,10 @@ public class ClientConnectThread extends Thread {
 		pwdUtilisateur = ClientServerProtocol.decodeProtocole_PWD(reponse);
 		// On crée un objet User à partir de ces 2 informations.
 		User newUser = new User(loginUtilisateur, loginUtilisateur, salonId);
-		boolean isUserOK = authentication(newUser, salonId);
+		boolean isUserOK = this.authentication(newUser, salonId);
 		if (isUserOK) {
 
-			ServerToClientThread client = new ServerToClientThread(newUser, socket, clientListModel);
+			ServerToClientThread client = new ServerToClientThread(newUser, socket, this.clientListModel);
 			// Nouveau protocole : On accepte la connexion.
 			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
 					ClientServerProtocol.OK, salonId, salonName, recepteur, nouveauIdSalon);
@@ -108,9 +75,9 @@ public class ClientConnectThread extends Thread {
 			dos.writeUTF(line);
 
 			// Add user
-			if (BroadcastThread.addClient(salonId, newUser, client)) {
+			if (BroadcastThread.addClient(salonId, newUser, client, true)) {
 				client.start();
-				clientListModel.addElement(newUser.getLogin());
+				this.clientListModel.addElement(newUser.getLogin());
 
 				// Nouveau protocole : On signale l'arrivée de cet utilisateur
 				line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
@@ -137,13 +104,47 @@ public class ClientConnectThread extends Thread {
 
 	}
 
+	public void close() throws IOException {
+		System.err.println("server:close()");
+		if (this.server != null) {
+			this.server.close();
+		}
+	}
+
 	public void open() throws IOException {
 	}
 
-	public void close() throws IOException {
-		System.err.println("server:close()");
-		if (server != null)
-			server.close();
+	private void printMsg(String msg) {
+		try {
+			if (this.model != null) {
+				this.model.insertString(this.model.getLength(), msg + "\n", null);
+			}
+			System.out.println(msg);
+		} catch (BadLocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void run() {
+		while (!this.canStop) {
+			this.printMsg("Waiting for a client ...");
+			Socket socket;
+			try {
+				socket = this.server.accept();
+				this.printMsg("Client accepted: " + socket);
+
+				// Accept new client or close the socket
+				this.acceptClient(socket);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 }

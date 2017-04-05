@@ -326,7 +326,7 @@ public class SimpleChatFrameClient extends JFrame {
 		this.panelPiedPage.add(panel);
 
 		// zone de gestion des messages
-		this.lblSender = new JLabel("?"); //$NON-NLS-1$
+		this.lblSender = new JLabel(SalonLst.DEFAULT_SALON_NAME); //$NON-NLS-1$
 		this.lblSender.setHorizontalAlignment(SwingConstants.RIGHT);
 		this.lblSender.setHorizontalTextPosition(SwingConstants.CENTER);
 		this.lblSender.setPreferredSize(new Dimension(100, 14));
