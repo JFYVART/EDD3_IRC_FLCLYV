@@ -75,7 +75,7 @@ public class ClientConnectThread extends Thread {
 			dos.writeUTF(line);
 
 			// Add user
-			if (BroadcastThread.addClient(salonId, newUser, client, true)) {
+			if (BroadcastThread.addClient(salonId, newUser, client, false)) {
 				client.start();
 				this.clientListModel.addElement(newUser.getLogin());
 

@@ -7,9 +7,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.HashMap;
 
 import javax.swing.DefaultListModel;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Style;
 import javax.swing.text.StyledDocument;
 
@@ -19,6 +21,8 @@ import com.cfranc.irc.server.SalonLst;
 import com.cfranc.irc.ui.SimpleChatClientApp;
 
 public class ClientToServerThread extends Thread implements IfSenderModel {
+
+
 	private Socket socket = null;
 	private DataOutputStream streamOut = null;
 	private DataInputStream streamIn = null;
@@ -37,11 +41,66 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 
 	boolean done;
 
+	public static HashMap<Integer, DiscussionSalon> salon_DiscussionSalonMap = new HashMap<Integer, DiscussionSalon>();
+
+
+	/**
+	 * Recherche si il existe un DiscussionSalon
+	 * correspondant à l'idSalon S'il existe, on le retourne tel quel Sinon on
+	 * le crée
+	 *
+	 * @param idSalon
+	 * @return DiscussionSalon
+	 */
+	public DiscussionSalon createOrRetrieveDiscussionSalonByIdSalon(int idSalon) {
+		// Par défaut on crée un nouveau Discussionsalon
+		DiscussionSalon discussionsalon = new DiscussionSalon(new DefaultListModel<String>(), new DefaultStyledDocument());
+
+		// Si une discussionSalon correspond à l'idSalon, on
+		// le retourne, sinon ce sera le nouveau discussionSalon qui sera retourné
+		if (this.salon_DiscussionSalonMap.containsKey(idSalon)) {
+			discussionsalon = this.salon_DiscussionSalonMap.get(idSalon);
+		} else // On ajoute le idsalon et discussionSalon
+		{
+			this.salon_DiscussionSalonMap.put(new Integer(idSalon), discussionsalon);
+		}
+
+		return discussionsalon;
+	}
+
+	/**
+	 * retourne le DefaultListModel<String> (liste des salons) de la discussion d'un salon donné
+	 *
+	 * @param idSalon
+	 * @return DefaultListModel<String>
+	 */
+	public DefaultListModel<String> getClientListModelByIdSalon(int idSalon) {
+		DiscussionSalon discussionsalon =this.createOrRetrieveDiscussionSalonByIdSalon(idSalon);
+		return discussionsalon.getClientListModel();
+	}
+
+
+	/**
+	 * retourne le StyledDocument (documentModel contenant les messages) d'un salon donné
+	 *
+	 * @param idSalon
+	 * @return StyledDocument
+	 */
+	public StyledDocument getStyledDocumentByIdSalon(int idSalon) {
+		DiscussionSalon discussionsalon =this.createOrRetrieveDiscussionSalonByIdSalon(idSalon);
+		return discussionsalon.getDocumentModel();
+	}
+
+
 	public ClientToServerThread(StyledDocument documentModel, DefaultListModel<String> clientListModel, Socket socket,
 			String login, String pwd, DefaultListSalonModel salonListModel) {
 		super();
+		// création d'un discussionSalon
 		this.documentModel = documentModel;
 		this.clientListModel = clientListModel;
+		this.salon_DiscussionSalonMap = new HashMap<Integer, DiscussionSalon>();
+		this.salon_DiscussionSalonMap.put(new Integer(this.idSalon),new DiscussionSalon(this.clientListModel, this.documentModel));
+
 		this.socket = socket;
 		this.login = login;
 		this.pwd = pwd;
@@ -57,12 +116,17 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 		if (!nomSalon.isEmpty()) {
 			Salon salonLu = new Salon(nomSalon, SalonLst.DEFAULT_SALON_NOT_PRIVACY, nouveauIdSalon);
 			if (!this.salonListModel.contains(salonLu)) {
+				// On rajoute le salon à la liste des salons
 				this.salonListModel.addElement(salonLu);
 				EventSalonADD eventSalonAdd = new EventSalonADD(salonLu);
+				// On crée une discussionSalon pour ce nouveau salon
+				this.salon_DiscussionSalonMap.put(new Integer(nouveauIdSalon),this.createOrRetrieveDiscussionSalonByIdSalon(nouveauIdSalon));
+				// On prévient la vue de se raffraichir
 				this.salonListModel.notifyObservers(eventSalonAdd);
 			}
 		}
 	}
+
 
 	private boolean authentification() {
 		boolean res = false;
@@ -123,6 +187,8 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 		System.out.println("Socket fermée");
 	}
 
+
+
 	public void open() throws IOException {
 		this.console = new BufferedReader(new InputStreamReader(System.in));
 		this.streamIn = new DataInputStream(new BufferedInputStream(this.socket.getInputStream()));
@@ -153,6 +219,11 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 		String nomSalon = ClientServerProtocol.decodeProtocole_NomSalon(line);
 		int idSalon = ClientServerProtocol.decodeProtocole_IdSalon(line);
 		int nouveauIdSalon = ClientServerProtocol.decodeProtocole_Nouveausalon(line);
+
+		// On se positionne sur le clientListModel concerné
+		this.clientListModel = this.getClientListModelByIdSalon(idSalon);
+		// On se positionne sur le documentModel concerné
+		this.documentModel = this.getStyledDocumentByIdSalon(idSalon);
 
 		switch (commande) {
 		case ClientServerProtocol.ADD: // Un user arrive dans le salon

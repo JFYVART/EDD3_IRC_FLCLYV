@@ -30,6 +30,27 @@ public class SimpleChatClientApp implements Observer {
 	public static final String BOLD_ITALIC = "BoldItalic";
 	public static final String GRAY_PLAIN = "Gray";
 	private static ClientToServerThread clientToServerThread;
+
+	Socket socketClientServer;
+	int serverPort;
+	String serverName;
+	String clientName;
+
+	// HashMap pour chaque salon de ces éléments
+	// le bouton envoyer devra récupérer le salon actif pour savoir sur lequel
+	// envoyer
+
+	String clientPwd;
+	int idSalonActif = SalonLst.DEFAULT_SALON_ID;
+
+	private SimpleChatFrameClient frame;
+
+	public StyledDocument documentModel = new DefaultStyledDocument();
+
+	DefaultListModel<String> clientListModel = new DefaultListModel<String>();
+
+	DefaultListSalonModel salonListModel = new DefaultListSalonModel();
+
 	public static DefaultStyledDocument defaultDocumentModel() {
 		DefaultStyledDocument res = new DefaultStyledDocument();
 
@@ -91,26 +112,6 @@ public class SimpleChatClientApp implements Observer {
 			e.printStackTrace();
 		}
 	}
-
-	Socket socketClientServer;
-	int serverPort;
-	String serverName;
-	String clientName;
-
-	// HashMap pour chaque salon de ces éléments
-	// le bouton envoyer devra récupérer le salon actif pour savoir sur lequel
-	// envoyer
-
-	String clientPwd;
-	int idSalonActif = SalonLst.DEFAULT_SALON_ID;
-
-	private SimpleChatFrameClient frame;
-
-	public StyledDocument documentModel = new DefaultStyledDocument();
-
-	DefaultListModel<String> clientListModel = new DefaultListModel<String>();
-
-	DefaultListSalonModel salonListModel = new DefaultListSalonModel();
 
 	public SimpleChatClientApp() {
 

@@ -78,8 +78,11 @@ public class BroadcastThread extends Thread {
 						nomSalon, nomRecepteur, nouveauIdSalon);
 				entry.getValue().post(line);
 			}
+			// On ne rajoute le client au hashmap que s'il n'existe pas déjà (cas différent de la création d'un salon et de l'arrivée d'un nouvel utilisateur)
+			if (!clientTreadsMap.containsKey(user)) {
+				clientTreadsMap.put(user, serverToClientThread);
+			}
 
-			clientTreadsMap.put(user, serverToClientThread);
 
 			for (Entry<User, ServerToClientThread> entry : clientTreadsMap.entrySet()) {
 

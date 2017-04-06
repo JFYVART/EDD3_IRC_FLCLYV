@@ -63,6 +63,41 @@ import com.cfranc.irc.server.SalonLst;
 
 public class SimpleChatFrameClient extends JFrame {
 
+	private DefaultListSalonModel salonListModel;
+	IfSenderModel sender;
+	private String senderName;
+	private String nouveauNomSalonSaisi = "";
+	private JPanel contentPane;
+
+	private JPanel panelPiedPage;
+	private JTextField textField;
+	private JLabel lblSender;
+	private JTabbedPane tabbedPaneSalon;
+
+	private final ResourceAction sendAction = new SendAction();
+
+	private final ResourceAction newSalondAction = new NewSalonAction();
+
+	private final ResourceAction closeSalonAction = new CloseSalonAction();
+
+	private final ResourceAction lockAction = new LockAction();
+
+	private boolean isScrollLocked = true;
+
+	private String salonName;
+	private SalonLst listSalon = new SalonLst();
+	private static Document documentModel;
+	private static ListModel<String> listModel;
+
+	// public void createOngletSalon(Document documentModel, String salonName)
+	// {}
+
+	private AddNewSalonFrame newSalonFrame;
+
+	JTextField txtCrerUnSalon;
+	// private JTextField textField_NewSalon;
+
+
 	private class CloseSalonAction extends ResourceAction {
 		public CloseSalonAction() {
 			this.putValue(NAME, Messages.getString("SimpleChatFrameClient.11")); //$NON-NLS-1$
@@ -131,8 +166,7 @@ public class SimpleChatFrameClient extends JFrame {
 		}
 	}
 
-	private static Document documentModel;
-	private static ListModel<String> listModel;
+
 
 	private static void addPopup(Component component, final JPopupMenu popup) {
 		component.addMouseListener(new MouseAdapter() {
@@ -191,37 +225,7 @@ public class SimpleChatFrameClient extends JFrame {
 		}
 	}
 
-	private DefaultListSalonModel salonListModel;
-	IfSenderModel sender;
-	private String senderName;
-	private String nouveauNomSalonSaisi = "";
-	private JPanel contentPane;
 
-	private JPanel panelPiedPage;
-	private JTextField textField;
-	private JLabel lblSender;
-	private JTabbedPane tabbedPaneSalon;
-
-	private final ResourceAction sendAction = new SendAction();
-
-	private final ResourceAction newSalondAction = new NewSalonAction();
-
-	private final ResourceAction closeSalonAction = new CloseSalonAction();
-
-	private final ResourceAction lockAction = new LockAction();
-
-	private boolean isScrollLocked = true;
-
-	private String salonName;
-	private SalonLst listSalon = new SalonLst();
-
-	// public void createOngletSalon(Document documentModel, String salonName)
-	// {}
-
-	private AddNewSalonFrame newSalonFrame;
-
-	JTextField txtCrerUnSalon;
-	// private JTextField textField_NewSalon;
 
 	public SimpleChatFrameClient() {
 		this(null, new DefaultListModel<String>(), SimpleChatClientApp.defaultDocumentModel(),
