@@ -48,13 +48,13 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.Style;
 import javax.swing.text.StyledDocument;
 
 import com.cfranc.irc.ClientServerProtocol;
 import com.cfranc.irc.client.DefaultListSalonModel;
+import com.cfranc.irc.client.DiscussionSalon;
 import com.cfranc.irc.client.EventSalonADD;
 import com.cfranc.irc.client.EventSalonSUPPR;
 import com.cfranc.irc.client.IfSenderModel;
@@ -364,13 +364,6 @@ public class SimpleChatFrameClient extends JFrame {
 
 
 
-	public void addSalon(EventSalonADD event) {
-		System.out.println("Ajout du salon :" + event.getSalon().getNomSalon());
-		this.createOngletSalon(new DefaultStyledDocument(), this.tabbedPaneSalon, event.getSalon(),
-				new DefaultListModel<String>());
-		this.listSalon.createOrRetrieveSalon(event.getSalon().getNomSalon(),SalonLst.DEFAULT_SALON_NOT_PRIVACY);
-	}
-
 	public void createOngletSalon(Document documentModel, JTabbedPane tabbedPaneSalon, Salon salon, ListModel<String> clientListModel) {
 
 		JPanel panelSalon = new JPanel();
@@ -549,6 +542,19 @@ public class SimpleChatFrameClient extends JFrame {
 			break;
 		}
 
+	}
+
+
+	/***
+	 *  On crée un nouvel Onglet à partir des données passées par le Thread
+	 * @param event
+	 */
+	public void addSalon(EventSalonADD event) {
+		System.out.println("Ajout du salon :" + event.getSalon().getNomSalon());
+		DiscussionSalon discussionDuSalonCree = event.getDiscussionSalon();
+		this.createOngletSalon(discussionDuSalonCree.getDocumentModel(), this.tabbedPaneSalon, event.getSalon(),
+				discussionDuSalonCree.getClientListModel());
+		this.listSalon.createOrRetrieveSalon(event.getSalon().getNomSalon(),SalonLst.DEFAULT_SALON_NOT_PRIVACY);
 	}
 
 	public void supprSalon(EventSalonSUPPR event) {

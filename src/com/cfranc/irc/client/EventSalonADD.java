@@ -4,9 +4,11 @@ import com.cfranc.irc.server.Salon;
 
 public class EventSalonADD {
 	private Salon salon;
+	private DiscussionSalon discussionSalon;
 
-	public EventSalonADD(Salon salon) {
+	public EventSalonADD(Salon salon,  DiscussionSalon discussionSalon) {
 		this.salon = salon;
+		this.discussionSalon = discussionSalon;
 	}
 
 	public Salon getSalon() {
@@ -15,6 +17,14 @@ public class EventSalonADD {
 
 	public void setSalon(Salon salon) {
 		this.salon = salon;
+	}
+
+	public DiscussionSalon getDiscussionSalon() {
+		return this.discussionSalon;
+	}
+
+	public void setDiscussionSalon(DiscussionSalon discussionSalon) {
+		this.discussionSalon = discussionSalon;
 	}
 
 }

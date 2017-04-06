@@ -31,6 +31,7 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 	DefaultListModel<String> clientListModel;
 	StyledDocument documentModel;
 	DefaultListSalonModel salonListModel;
+	DiscussionSalon discussionSalonEncours;
 	String msgToSend = null;
 	// Nouveau Protocole
 	String nomRecepteur = "";
@@ -41,7 +42,7 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 
 	boolean done;
 
-	public static HashMap<Integer, DiscussionSalon> salon_DiscussionSalonMap = new HashMap<Integer, DiscussionSalon>();
+	public HashMap<Integer, DiscussionSalon> salon_DiscussionSalonMap = new HashMap<Integer, DiscussionSalon>();
 
 
 	/**
@@ -64,7 +65,6 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 		{
 			this.salon_DiscussionSalonMap.put(new Integer(idSalon), discussionsalon);
 		}
-
 		return discussionsalon;
 	}
 
@@ -75,8 +75,9 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 	 * @return DefaultListModel<String>
 	 */
 	public DefaultListModel<String> getClientListModelByIdSalon(int idSalon) {
-		DiscussionSalon discussionsalon =this.createOrRetrieveDiscussionSalonByIdSalon(idSalon);
-		return discussionsalon.getClientListModel();
+		// On mets à jour le salon en cours
+		this.discussionSalonEncours =  this.createOrRetrieveDiscussionSalonByIdSalon(idSalon);
+		return this.discussionSalonEncours.getClientListModel();
 	}
 
 
@@ -87,8 +88,9 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 	 * @return StyledDocument
 	 */
 	public StyledDocument getStyledDocumentByIdSalon(int idSalon) {
-		DiscussionSalon discussionsalon =this.createOrRetrieveDiscussionSalonByIdSalon(idSalon);
-		return discussionsalon.getDocumentModel();
+		// On mets à jour le salon en cours
+		this.discussionSalonEncours = this.createOrRetrieveDiscussionSalonByIdSalon(idSalon);
+		return this.discussionSalonEncours.getDocumentModel();
 	}
 
 
@@ -99,7 +101,8 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 		this.documentModel = documentModel;
 		this.clientListModel = clientListModel;
 		this.salon_DiscussionSalonMap = new HashMap<Integer, DiscussionSalon>();
-		this.salon_DiscussionSalonMap.put(new Integer(this.idSalon),new DiscussionSalon(this.clientListModel, this.documentModel));
+		this.discussionSalonEncours = new DiscussionSalon(this.clientListModel, this.documentModel);
+		this.salon_DiscussionSalonMap.put(new Integer(SalonLst.DEFAULT_SALON_ID),this.discussionSalonEncours);
 
 		this.socket = socket;
 		this.login = login;
@@ -118,10 +121,11 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 			if (!this.salonListModel.contains(salonLu)) {
 				// On rajoute le salon à la liste des salons
 				this.salonListModel.addElement(salonLu);
-				EventSalonADD eventSalonAdd = new EventSalonADD(salonLu);
 				// On crée une discussionSalon pour ce nouveau salon
-				this.salon_DiscussionSalonMap.put(new Integer(nouveauIdSalon),this.createOrRetrieveDiscussionSalonByIdSalon(nouveauIdSalon));
+				this.discussionSalonEncours = this.createOrRetrieveDiscussionSalonByIdSalon(nouveauIdSalon);
+				this.salon_DiscussionSalonMap.put(new Integer(nouveauIdSalon),this.discussionSalonEncours);
 				// On prévient la vue de se raffraichir
+				EventSalonADD eventSalonAdd = new EventSalonADD(salonLu,this.discussionSalonEncours );
 				this.salonListModel.notifyObservers(eventSalonAdd);
 			}
 		}
@@ -348,7 +352,8 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 			Salon salonLu = new Salon(nomSalon, SalonLst.DEFAULT_SALON_NOT_PRIVACY, nouveauIdSalon);
 			if (!this.salonListModel.contains(salonLu)) {
 				this.salonListModel.addElement(salonLu);
-				EventSalonSUPPR eventSalonAdd = new EventSalonSUPPR(salonLu);
+				this.discussionSalonEncours = this.createOrRetrieveDiscussionSalonByIdSalon(nouveauIdSalon);
+				EventSalonSUPPR eventSalonAdd = new EventSalonSUPPR(salonLu, this.discussionSalonEncours);
 				this.salonListModel.notifyObservers(eventSalonAdd);
 			}
 		}
