@@ -64,6 +64,7 @@ import com.cfranc.irc.server.SalonLst;
 public class SimpleChatFrameClient extends JFrame {
 
 	private DefaultListSalonModel salonListModel;
+	DiscussionSalon discussionDuSalonCree;
 	IfSenderModel sender;
 	private String senderName;
 	private String nouveauNomSalonSaisi = "";
@@ -86,8 +87,8 @@ public class SimpleChatFrameClient extends JFrame {
 
 	private String salonName;
 	private SalonLst listSalon = new SalonLst();
-	private static Document documentModel;
-	private static ListModel<String> listModel;
+	private Document documentModel;
+	private ListModel<String> listModel;
 
 	// public void createOngletSalon(Document documentModel, String salonName)
 	// {}
@@ -215,10 +216,10 @@ public class SimpleChatFrameClient extends JFrame {
 		} // voir si possible de rajouter fermeture frame client
 	}
 
-	public static void sendMessage(String user, String line, Style styleBI, Style styleGP) {
+	public void sendMessage(String user, String line, Style styleBI, Style styleGP) {
 		try {
-			documentModel.insertString(documentModel.getLength(), user + " : ", styleBI); //$NON-NLS-1$
-			documentModel.insertString(documentModel.getLength(), line + "\n", styleGP); //$NON-NLS-1$
+			this.documentModel.insertString(this.documentModel.getLength(), user + " : ", styleBI); //$NON-NLS-1$
+			this.documentModel.insertString(this.documentModel.getLength(), line + "\n", styleGP); //$NON-NLS-1$
 		} catch (BadLocationException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -528,6 +529,10 @@ public class SimpleChatFrameClient extends JFrame {
 		int idSalonEncours = this.listSalon.retrieveIdSalon(nomSalonEncours);
 		switch (actionToPerform) {
 		case 0:// On envoie un message
+			// TODO (inserted by : JFYVART / [7 avr. 2017, 08:47:51]
+			/***
+			 *  Gérer le premier message de l'utilisateur dans un salon.
+			 */
 			this.sender.setMsgToSend(this.textField.getText(), idSalonEncours, "", "", "");
 			break;
 		case 1:// On veut un nouveau salon
@@ -551,9 +556,9 @@ public class SimpleChatFrameClient extends JFrame {
 	 */
 	public void addSalon(EventSalonADD event) {
 		System.out.println("Ajout du salon :" + event.getSalon().getNomSalon());
-		DiscussionSalon discussionDuSalonCree = event.getDiscussionSalon();
-		this.createOngletSalon(discussionDuSalonCree.getDocumentModel(), this.tabbedPaneSalon, event.getSalon(),
-				discussionDuSalonCree.getClientListModel());
+		this.discussionDuSalonCree = event.getDiscussionSalon();
+		this.createOngletSalon(this.discussionDuSalonCree.getDocumentModel(), this.tabbedPaneSalon, event.getSalon(),
+				this.discussionDuSalonCree.getClientListModel());
 		this.listSalon.createOrRetrieveSalon(event.getSalon().getNomSalon(),SalonLst.DEFAULT_SALON_NOT_PRIVACY);
 	}
 

@@ -45,8 +45,8 @@ public class BroadcastThread extends Thread {
 		int nouveauIdSalon = SalonLst.DEFAULT_SALON_ID;
 
 		// On récupère le clientTreadsMap lié au salon
-		HashMap<User, ServerToClientThread> clientTreadsMap = createOrRetrieveClientTreadsMapByIdSalon(idSalon, user,
-				serverToClientThread);
+		HashMap<User, ServerToClientThread> clientTreadsMap = createOrRetrieveClientTreadsMapByIdSalon(idSalon);
+		clientTreadsMap.put(user, serverToClientThread);
 
 		// Si on doit vérifier que l'utilisateur est bien dans le thread :
 		if (isUserToBeAddedToThread) {
@@ -110,13 +110,43 @@ public class BroadcastThread extends Thread {
 	 */
 	private static void broadCastMessage(User user, String pwd, String msg, String commande, int idSalon,
 			String nomSalon, String recepteur, int nouveauIdSalon) {
-		// On parcoure la liste des utilisateurs connectés
-		for (String connectedUsername : listConnextedUser) {
-			if (!connectedUsername.equals(user.getLogin())) {
-				User connectedUser = new User(connectedUsername, "", idSalon);
-				sendMessage(connectedUser, pwd, msg, commande, idSalon, nomSalon, recepteur, nouveauIdSalon);
+		// Propagation de la création du message
+		String line;
+		HashMap<User, ServerToClientThread> clientTreadsMap = createOrRetrieveClientTreadsMapByIdSalon(idSalon);
+		// clientTreadsMap.put(user, serverToClientThread);
+		// modifs du 03/11 : ajout de tous les users à la liste des users
+		// des clients
+		for (Entry<User, ServerToClientThread> entry : clientTreadsMap.entrySet()) {
+			// Nouveau protocole : On signale à chaque Thread client
+			// l'arrivée d'un nouvel utilisateur
+			line = ClientServerProtocol.encodeProtocole_Ligne(user.getLogin(), pwd, msg, commande, idSalon,
+					nomSalon, recepteur, nouveauIdSalon);
+			entry.getValue().post(line);
+			if (!clientTreadsMap.containsKey(user)) {
+				clientTreadsMap.put(user, entry.getValue());
+			}
+			// Ajout des clients au nouveau salon
+			if (!entry.getKey().getLogin().equals(user.getLogin())) {
+				addClient(nouveauIdSalon, user, entry.getValue(), true);
 			}
 		}
+		for (Entry<User, ServerToClientThread> entry : clientTreadsMap.entrySet()) {
+
+			// Nouveau protocole : On signale au nouvel arrivant les
+
+			// utilisateurs existants
+			line = ClientServerProtocol.encodeProtocole_Ligne(entry.getKey().getLogin(), pwd, msg,
+					ClientServerProtocol.ADD, idSalon, nomSalon, recepteur, nouveauIdSalon);
+
+			entry.getValue().post(line);
+
+			// Ajout des clients au nouveau salon
+			if (!entry.getKey().getLogin().equals(user.getLogin())) {
+				addClient(nouveauIdSalon, user, entry.getValue(), true);
+			}
+		}
+
+
 	}
 
 	/***
@@ -163,8 +193,7 @@ public class BroadcastThread extends Thread {
 		// On récupère le Thread existant
 		HashMap<User, ServerToClientThread> HashEnCours = getClientTreadsMap(idSalon);
 		// Puis on l'affecte au nouveau salon
-		HashMap<User, ServerToClientThread> HashDuSalon = createOrRetrieveClientTreadsMapByIdSalon(nouveauIdSalon, user,
-				HashEnCours.get(user));
+		HashMap<User, ServerToClientThread> HashDuSalon = createOrRetrieveClientTreadsMapByIdSalon(nouveauIdSalon);
 		// on renvoie le message avec l'idSalon à tout le monde
 		broadCastMessage(user, pwd, msg, commande, idSalon, nomSalon, recepteur, nouveauIdSalon);
 		// On ajoute le user créant le salon au salon mais sans s'ajouter au Thread:
@@ -181,8 +210,7 @@ public class BroadcastThread extends Thread {
 	 * @param serverToClientThread
 	 * @return
 	 */
-	public static HashMap<User, ServerToClientThread> createOrRetrieveClientTreadsMapByIdSalon(int idSalon, User user,
-			ServerToClientThread serverToClientThread) {
+	public static HashMap<User, ServerToClientThread> createOrRetrieveClientTreadsMapByIdSalon(int idSalon) {
 		// Par défaut on crée un nouveau HashMap<User, ServerToClientThread>
 		HashMap<User, ServerToClientThread> clientTreadsMap = new HashMap<User, ServerToClientThread>();
 
@@ -194,7 +222,7 @@ public class BroadcastThread extends Thread {
 		} else // On ajoute le idsalon et le Thread au nouveau HashMap<User,
 			// ServerToClientThread>
 		{
-			clientTreadsMap.put(user, serverToClientThread);
+
 			salon_ClientTreadsMap.put(new Integer(idSalon), clientTreadsMap);
 		}
 
