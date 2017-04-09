@@ -10,38 +10,43 @@ import com.cfranc.irc.ui.SimpleChatFrameClient;
 
 
 public class DefaultListSalonModel extends DefaultListModel<Salon> {
-	
+
 	/**
-	 * 
+	 * Implémentation du design pattern de l'observateur
+	 * On hérite de DefaultListModel pour permettre d'hétiter des mécanisme de cette classe (Modèle MVC natif)
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
 	public DefaultListSalonModel(){
 		super();
 	}
-	
+
+	// Liste des observateurs
 	private ArrayList<SimpleChatFrameClient> collectionObservateur = new ArrayList<SimpleChatFrameClient>();
 
+	// Notification des observateurs.
 	public void notifyObservers(Object event) {
-		for (SimpleChatFrameClient observer : collectionObservateur) {
+		for (SimpleChatFrameClient observer : this.collectionObservateur) {
 			if (event instanceof EventSalonADD) {
-			observer.addSalon((EventSalonADD)event);
+				observer.addSalon((EventSalonADD)event);
 			} else if (event instanceof EventSalonSUPPR) {
 				observer.supprSalon((EventSalonSUPPR)event);
-				}
+			}
 		}
 	}
 
+
 	public void addObserver(SimpleChatFrameClient observer) {
-		collectionObservateur.add(observer);
+		this.collectionObservateur.add(observer);
 	}
 
 	public void deleteObserver(SimpleChatFrameClient observer) {
-		collectionObservateur.remove(observer);
+		this.collectionObservateur.remove(observer);
 	}
 
 	public ArrayList<SimpleChatFrameClient> getCollection() {
-		return collectionObservateur;
+		return this.collectionObservateur;
 	}
 
 	protected void setCollection(ArrayList<SimpleChatFrameClient> collection) {

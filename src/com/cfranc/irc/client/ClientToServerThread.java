@@ -28,10 +28,17 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 	private DataInputStream streamIn = null;
 	private BufferedReader console = null;
 	String login, pwd;
+	// Liste des utilisateurs du salon en cours (sert pour l'affichage dans un onglet donné)
 	DefaultListModel<String> clientListModel;
+	// Conversation des utilisateurs du salon (sert pour l'affichage dans un onglet donné)
 	StyledDocument documentModel;
+	// Liste des salons (la modification de la liste permet d'avertir la vue)
 	DefaultListSalonModel salonListModel;
+	// Conversation et liste des utilisateurs du salon en cours
 	DiscussionSalon discussionSalonEncours;
+	// Hashmap qui permet à parti de l'idSalon de retrouver son DiscussionSalon
+	public HashMap<Integer, DiscussionSalon> salon_DiscussionSalonMap = new HashMap<Integer, DiscussionSalon>();
+
 	String msgToSend = null;
 	// Nouveau Protocole
 	String nomRecepteur = "";
@@ -42,7 +49,7 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 
 	boolean done;
 
-	public HashMap<Integer, DiscussionSalon> salon_DiscussionSalonMap = new HashMap<Integer, DiscussionSalon>();
+
 
 
 	/**

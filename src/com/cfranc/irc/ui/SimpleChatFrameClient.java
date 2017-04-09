@@ -98,7 +98,6 @@ public class SimpleChatFrameClient extends JFrame {
 	JTextField txtCrerUnSalon;
 	// private JTextField textField_NewSalon;
 
-
 	private class CloseSalonAction extends ResourceAction {
 		public CloseSalonAction() {
 			this.putValue(NAME, Messages.getString("SimpleChatFrameClient.11")); //$NON-NLS-1$
@@ -167,8 +166,6 @@ public class SimpleChatFrameClient extends JFrame {
 		}
 	}
 
-
-
 	private static void addPopup(Component component, final JPopupMenu popup) {
 		component.addMouseListener(new MouseAdapter() {
 			@Override
@@ -226,8 +223,6 @@ public class SimpleChatFrameClient extends JFrame {
 		}
 	}
 
-
-
 	public SimpleChatFrameClient() {
 		this(null, new DefaultListModel<String>(), SimpleChatClientApp.defaultDocumentModel(),
 				new DefaultListSalonModel());
@@ -278,11 +273,12 @@ public class SimpleChatFrameClient extends JFrame {
 			for (int i = 0; i < salonListModel.getSize(); i++) {
 				// On crée un onglet par salon
 				Salon salon = salonListModel.getElementAt(i);
-				this.createOngletSalon(documentModel, this.tabbedPaneSalon, salon, new DefaultListModel<String>() );
+				this.createOngletSalon(documentModel, this.tabbedPaneSalon, salon, new DefaultListModel<String>());
 			}
 		} else { // Pas de salon au lancement : on en crée un onglet par défaut,
 			// on l'ajoute à la liste et on ouvre un onglet
-			Salon salon = new Salon(SalonLst.DEFAULT_SALON_NAME, SalonLst.DEFAULT_SALON_NOT_PRIVACY, SalonLst.DEFAULT_SALON_ID);
+			Salon salon = new Salon(SalonLst.DEFAULT_SALON_NAME, SalonLst.DEFAULT_SALON_NOT_PRIVACY,
+					SalonLst.DEFAULT_SALON_ID);
 			salonListModel.addElement(salon);
 			this.createOngletSalon(documentModel, this.tabbedPaneSalon, salon, clientListModel);
 		}
@@ -331,7 +327,7 @@ public class SimpleChatFrameClient extends JFrame {
 		this.panelPiedPage.add(panel);
 
 		// zone de gestion des messages
-		this.lblSender = new JLabel(SalonLst.DEFAULT_SALON_NAME); //$NON-NLS-1$
+		this.lblSender = new JLabel(SalonLst.DEFAULT_SALON_NAME); // $NON-NLS-1$
 		this.lblSender.setHorizontalAlignment(SwingConstants.RIGHT);
 		this.lblSender.setHorizontalTextPosition(SwingConstants.CENTER);
 		this.lblSender.setPreferredSize(new Dimension(100, 14));
@@ -363,16 +359,16 @@ public class SimpleChatFrameClient extends JFrame {
 
 	}
 
-
-
-	public void createOngletSalon(Document documentModelOnglet, JTabbedPane tabbedPaneSalon, Salon salon, ListModel<String> clientListModelOnglet) {
+	public void createOngletSalon(Document documentModelOnglet, JTabbedPane tabbedPaneSalon, Salon salon,
+			ListModel<String> clientListModelOnglet) {
 
 		JPanel panelSalon = new JPanel();
-		tabbedPaneSalon.addMouseListener(new MouseListener(){
+		tabbedPaneSalon.addMouseListener(new MouseListener() {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				// On mets à jour le nom du salon actif quand on change d'onglet => Libellé devant la zone de saisie
+				// On mets à jour le nom du salon actif quand on change d'onglet
+				// => Libellé devant la zone de saisie
 				SimpleChatFrameClient.this.lblSender.setText(tabbedPaneSalon.getSelectedComponent().getName());
 			}
 
@@ -399,7 +395,8 @@ public class SimpleChatFrameClient extends JFrame {
 
 		});
 
-		// On mets à jour le nom du salon dans l'onglet et dans le libellé devant la zonbe de saisie (Création de l'onglet)
+		// On mets à jour le nom du salon dans l'onglet et dans le libellé
+		// devant la zonbe de saisie (Création de l'onglet)
 		this.salonName = salon.getNomSalon();
 		panelSalon.setName(salon.getNomSalon());
 
@@ -531,13 +528,13 @@ public class SimpleChatFrameClient extends JFrame {
 		case 0:// On envoie un message
 			// TODO (inserted by : JFYVART / [7 avr. 2017, 08:47:51]
 			/***
-			 *  Gérer le premier message de l'utilisateur dans un salon.
+			 * Gérer le premier message de l'utilisateur dans un salon.
 			 */
 			this.sender.setMsgToSend(this.textField.getText(), idSalonEncours, "", "", "");
 			break;
 		case 1:// On veut un nouveau salon
-			this.sender.setMsgToSend("Création d'un salon", idSalonEncours, this.nouveauNomSalonSaisi, ClientServerProtocol.NVSALON,
-					"");
+			this.sender.setMsgToSend("Création d'un salon", idSalonEncours, this.nouveauNomSalonSaisi,
+					ClientServerProtocol.NVSALON, "");
 			break;
 
 		case 2:// On ferme le salon
@@ -549,18 +546,31 @@ public class SimpleChatFrameClient extends JFrame {
 
 	}
 
-
 	/***
-	 *  On crée un nouvel Onglet à partir des données passées par le Thread
+	 * On crée un nouvel Onglet à partir des données passées par le Thread la
+	 * méthode est appelée par la classe DefaultListSalonModel (Design pattern
+	 * Observer)
+	 *
 	 * @param event
 	 */
 	public void addSalon(EventSalonADD event) {
 		System.out.println("Ajout du salon :" + event.getSalon().getNomSalon());
+		// On positionne le DiscussionSalon sur celui que l'on nous passe (Thread ClientToServcer)
 		this.discussionDuSalonCree = event.getDiscussionSalon();
+		// On crée l'onglet en lui donnant une liste d'utilisateurs et un document model qui lui seront propres.
 		this.createOngletSalon(this.discussionDuSalonCree.getDocumentModel(), this.tabbedPaneSalon, event.getSalon(),
 				this.discussionDuSalonCree.getClientListModel());
-		this.listSalon.createOrRetrieveSalon(event.getSalon().getNomSalon(),SalonLst.DEFAULT_SALON_NOT_PRIVACY);
+		// On rajoute le nouveau salon à la liste des salons gérée par ce client
+		this.listSalon.createOrRetrieveSalon(event.getSalon().getNomSalon(), SalonLst.DEFAULT_SALON_NOT_PRIVACY);
 	}
+
+	// TODO (inserted by : JFYVART / [9 avr. 2017, 14:52:08]
+	/**
+	 *  On supprime un onglet  : la
+	 * méthode est appelée par la classe DefaultListSalonModel (Design pattern
+	 * Observer)
+	 * @param event
+	 */
 
 	public void supprSalon(EventSalonSUPPR event) {
 		System.out.println("Suppression du salon :" + event.getSalon().getNomSalon());

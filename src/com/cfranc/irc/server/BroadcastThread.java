@@ -11,17 +11,34 @@ import com.cfranc.irc.ClientServerProtocol;
 
 public class BroadcastThread extends Thread {
 
-	// public static HashMap<User, ServerToClientThread> clientTreadsMap=new
-	// HashMap<User, ServerToClientThread>();
+	/**
+	 *   HashMap contenant pour chaque salon de discussion (Le Integer correspond au idSalon) la liste des utilisateurs et leur Thread associés
+	 *   Pour chaque salon on a une liste de hashmap contenant un User et son thread "ServerToClientThread" associé.
+	 */
 	public static HashMap<Integer, HashMap<User, ServerToClientThread>> salon_ClientTreadsMap = new HashMap<Integer, HashMap<User, ServerToClientThread>>();
+	/**
+	 *  Le SalonLst mySalons contient la liste des salons existants sur le serveur
+	 */
 	public static SalonLst mySalons;
+	/**
+	 * Le listConnextedUser est une liste de noms d'utilisateur connectés. Un même nom ne peut y être deux fois.
+	 */
 	public static ArrayList<String> listConnextedUser = new ArrayList<String>();
 
+	/***
+	 *  le static{} permet de synchronizer les accès extérieurs à cette classe aux collection qu'il contient.
+	 */
 	static {
 		Collections.synchronizedMap(salon_ClientTreadsMap);
 		Collections.synchronizedList(listConnextedUser);
 	}
 
+	/***
+	 * Gestion des permissions
+	 * @param user
+	 * @param idSalon
+	 * @return
+	 */
 	public static boolean accept(User user, int idSalon) {
 		boolean res = true;
 		// On récupère le clientTreadsMap lié au salon
@@ -64,15 +81,8 @@ public class BroadcastThread extends Thread {
 
 		// Si res = true, on est autorisé à continuer
 		if (res) {
-			// On rajoute l'utilisateur à la liste des utilisateurs connectés
-
-
-			// clientTreadsMap.put(user, serverToClientThread);
-			// modifs du 03/11 : ajout de tous les users à la liste des users
-			// des clients
 			for (Entry<User, ServerToClientThread> entry : clientTreadsMap.entrySet()) {
-				// Nouveau protocole : On signale à chaque Thread client
-				// l'arrivée d'un nouvel utilisateur
+				// Nouveau protocole : On signale à chaque Thread client existant l'arrivée d'un nouvel utilisateur
 				commande = ClientServerProtocol.ADD;
 				line = ClientServerProtocol.encodeProtocole_Ligne(user.getLogin(), pwd, msg, commande, idSalon,
 						nomSalon, nomRecepteur, nouveauIdSalon);
@@ -83,12 +93,8 @@ public class BroadcastThread extends Thread {
 				clientTreadsMap.put(user, serverToClientThread);
 			}
 
-
 			for (Entry<User, ServerToClientThread> entry : clientTreadsMap.entrySet()) {
-
-				// Nouveau protocole : On signale au nouvel arrivant les
-
-				// utilisateurs existants
+				// Nouveau protocole : On signale au nouvel arrivant les utilisateurs déjà connectés.
 				line = ClientServerProtocol.encodeProtocole_Ligne(entry.getKey().getLogin(), pwd, msg,
 						ClientServerProtocol.ADD, idSalon, nomSalon, nomRecepteur, nouveauIdSalon);
 				serverToClientThread.post(line);
@@ -98,7 +104,7 @@ public class BroadcastThread extends Thread {
 	}
 
 	/***
-	 * Envoie à tous les utilisateurs de tous les salons un message
+	 * Envoie à tous les utilisateurs d'un salon donné un message
 	 *
 	 * @param user
 	 * @param pwd
@@ -110,42 +116,17 @@ public class BroadcastThread extends Thread {
 	 */
 	private static void broadCastMessage(User user, String pwd, String msg, String commande, int idSalon,
 			String nomSalon, String recepteur, int nouveauIdSalon) {
-		// Propagation de la création du message
+		// Propagation du message
 		String line;
 		HashMap<User, ServerToClientThread> clientTreadsMap = createOrRetrieveClientTreadsMapByIdSalon(idSalon);
-		// clientTreadsMap.put(user, serverToClientThread);
-		// modifs du 03/11 : ajout de tous les users à la liste des users
-		// des clients
 		for (Entry<User, ServerToClientThread> entry : clientTreadsMap.entrySet()) {
-			// Nouveau protocole : On signale à chaque Thread client
-			// l'arrivée d'un nouvel utilisateur
 			line = ClientServerProtocol.encodeProtocole_Ligne(user.getLogin(), pwd, msg, commande, idSalon,
 					nomSalon, recepteur, nouveauIdSalon);
 			entry.getValue().post(line);
 			if (!clientTreadsMap.containsKey(user)) {
 				clientTreadsMap.put(user, entry.getValue());
 			}
-			//			// Ajout des clients au nouveau salon
-			//			if (!entry.getKey().getLogin().equals(user.getLogin())) {
-			//				addClient(nouveauIdSalon, user, entry.getValue(), true);
-			//			}
 		}
-		for (Entry<User, ServerToClientThread> entry : clientTreadsMap.entrySet()) {
-
-			// Nouveau protocole : On signale au nouvel arrivant les
-
-			// utilisateurs existants
-			line = ClientServerProtocol.encodeProtocole_Ligne(entry.getKey().getLogin(), pwd, msg,
-					ClientServerProtocol.ADD, idSalon, nomSalon, recepteur, nouveauIdSalon);
-
-			entry.getValue().post(line);
-
-			//			// Ajout des clients au nouveau salon
-			//			if (!entry.getKey().getLogin().equals(user.getLogin())) {
-			//				addClient(nouveauIdSalon, user, entry.getValue(), true);
-			//			}
-		}
-
 
 	}
 
@@ -163,15 +144,23 @@ public class BroadcastThread extends Thread {
 	 */
 	public static void createMsgPrive(User user, String pwd, String msg, String commande, int idSalon, String nomSalon,
 			String recepteur, int nouveauIdSalon) {
-		// on cree le nouveau salon
-		idSalon = mySalons.createOrRetrieveSalon(nomSalon, SalonLst.DEFAULT_SALON_PRIVACY);
-		// on renvoie le message avec l'idSalon à l'expéditeur du message privé
-		// : Le nom du salon privé est celui de l'expéditeur
-		sendMessage(user, pwd, msg, commande, idSalon, recepteur, "", nouveauIdSalon);
-		// on envoie le message avec l'idSalon au récepteur du message privé :
-		// le nom du salon privé est celui de l'expéditeur
-		User recepteurUser = new User(recepteur, "", idSalon);
-		sendMessage(recepteurUser, pwd, msg, commande, idSalon, user.getLogin(), "", nouveauIdSalon);
+		// on cree le nouveau salon avec le nom du récepteur et de l'émetteur
+		nomSalon = user.getLogin() + "-" + recepteur;
+		nouveauIdSalon = mySalons.createOrRetrieveSalon(nomSalon, SalonLst.DEFAULT_SALON_PRIVACY);
+		// On récupère le Thread existant
+		HashMap<User, ServerToClientThread> HashEnCours = getClientTreadsMap(idSalon);
+		// Puis on l'affecte au nouveau salon
+		HashMap<User, ServerToClientThread> HashDuSalon = createOrRetrieveClientTreadsMapByIdSalon(nouveauIdSalon);
+
+		for (Entry<User, ServerToClientThread> entry : HashEnCours.entrySet()) {
+			// On communique avec l'emetteur du message et le récepteur :
+			if ((entry.getKey().getLogin().equals(user.getLogin()))||(entry.getKey().getLogin().equals(recepteur))){
+				// On communique le nouveau salon
+				sendMessage(entry.getKey(), pwd, msg, commande, idSalon, nomSalon, recepteur, nouveauIdSalon);
+				// Ajout de l'utilisateur au nouveau salon
+				addClient(nouveauIdSalon, entry.getKey(), entry.getValue(), false);
+			}
+		}
 	}
 
 	/***
