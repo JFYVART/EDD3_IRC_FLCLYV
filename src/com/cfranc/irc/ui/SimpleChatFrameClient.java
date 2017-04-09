@@ -365,7 +365,7 @@ public class SimpleChatFrameClient extends JFrame {
 
 
 
-	public void createOngletSalon(Document documentModel, JTabbedPane tabbedPaneSalon, Salon salon, ListModel<String> clientListModel) {
+	public void createOngletSalon(Document documentModelOnglet, JTabbedPane tabbedPaneSalon, Salon salon, ListModel<String> clientListModelOnglet) {
 
 		JPanel panelSalon = new JPanel();
 		tabbedPaneSalon.addMouseListener(new MouseListener(){
@@ -410,14 +410,14 @@ public class SimpleChatFrameClient extends JFrame {
 		JSplitPane splitPane = new JSplitPane();
 		panelSalon.add(splitPane, BorderLayout.CENTER);
 
-		JList<String> list = new JList<String>(clientListModel);
+		JList<String> list = new JList<String>(clientListModelOnglet);
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				int iFirstSelectedElement = ((JList) e.getSource()).getSelectedIndex();
-				if ((iFirstSelectedElement >= 0) && (iFirstSelectedElement < clientListModel.getSize())) {
-					SimpleChatFrameClient.this.senderName = clientListModel.getElementAt(iFirstSelectedElement);
+				if ((iFirstSelectedElement >= 0) && (iFirstSelectedElement < clientListModelOnglet.getSize())) {
+					SimpleChatFrameClient.this.senderName = clientListModelOnglet.getElementAt(iFirstSelectedElement);
 					SimpleChatFrameClient.this.getLblSender().setText(SimpleChatFrameClient.this.senderName);
 				} else {
 					SimpleChatFrameClient.this.getLblSender().setText("?"); //$NON-NLS-1$
@@ -427,7 +427,7 @@ public class SimpleChatFrameClient extends JFrame {
 		list.setMinimumSize(new Dimension(100, 0));
 		splitPane.setLeftComponent(list);
 
-		JTextPane textArea = new JTextPane((StyledDocument) documentModel);
+		JTextPane textArea = new JTextPane((StyledDocument) documentModelOnglet);
 		textArea.setEnabled(false);
 		JScrollPane scrollPaneText = new JScrollPane(textArea);
 

@@ -125,10 +125,10 @@ public class BroadcastThread extends Thread {
 			if (!clientTreadsMap.containsKey(user)) {
 				clientTreadsMap.put(user, entry.getValue());
 			}
-			// Ajout des clients au nouveau salon
-			if (!entry.getKey().getLogin().equals(user.getLogin())) {
-				addClient(nouveauIdSalon, user, entry.getValue(), true);
-			}
+			//			// Ajout des clients au nouveau salon
+			//			if (!entry.getKey().getLogin().equals(user.getLogin())) {
+			//				addClient(nouveauIdSalon, user, entry.getValue(), true);
+			//			}
 		}
 		for (Entry<User, ServerToClientThread> entry : clientTreadsMap.entrySet()) {
 
@@ -140,10 +140,10 @@ public class BroadcastThread extends Thread {
 
 			entry.getValue().post(line);
 
-			// Ajout des clients au nouveau salon
-			if (!entry.getKey().getLogin().equals(user.getLogin())) {
-				addClient(nouveauIdSalon, user, entry.getValue(), true);
-			}
+			//			// Ajout des clients au nouveau salon
+			//			if (!entry.getKey().getLogin().equals(user.getLogin())) {
+			//				addClient(nouveauIdSalon, user, entry.getValue(), true);
+			//			}
 		}
 
 
@@ -198,6 +198,13 @@ public class BroadcastThread extends Thread {
 		broadCastMessage(user, pwd, msg, commande, idSalon, nomSalon, recepteur, nouveauIdSalon);
 		// On ajoute le user créant le salon au salon mais sans s'ajouter au Thread:
 		addClient(nouveauIdSalon, user, HashEnCours.get(user), false);
+		// Puis on inscrit les autres users du salon
+		for (Entry<User, ServerToClientThread> entry : HashEnCours.entrySet()) {
+			// Ajout des clients au nouveau salon
+			addClient(nouveauIdSalon, entry.getKey(), entry.getValue(), false);
+		}
+
+
 	}
 
 	/**
