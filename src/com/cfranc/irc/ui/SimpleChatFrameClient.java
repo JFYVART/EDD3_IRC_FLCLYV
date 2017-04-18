@@ -535,6 +535,8 @@ public class SimpleChatFrameClient extends JFrame {
 		case 1:// On veut un nouveau salon
 			this.sender.setMsgToSend("Création d'un salon", idSalonEncours, this.nouveauNomSalonSaisi,
 					ClientServerProtocol.NVSALON, "");
+			//// Vider le champ de saisie du nouveau salon lorsque transmis au serveur (Peggy 18/04)
+			this.txtCrerUnSalon.setText("");
 			break;
 
 		case 2:// On ferme le salon
@@ -562,6 +564,7 @@ public class SimpleChatFrameClient extends JFrame {
 				this.discussionDuSalonCree.getClientListModel());
 		// On rajoute le nouveau salon à la liste des salons gérée par ce client
 		this.listSalon.createOrRetrieveSalon(event.getSalon().getNomSalon(), SalonLst.DEFAULT_SALON_NOT_PRIVACY);
+		
 	}
 
 	// TODO (inserted by : JFYVART / [9 avr. 2017, 14:52:08]
