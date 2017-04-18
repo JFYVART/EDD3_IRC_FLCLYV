@@ -286,8 +286,6 @@ public class SimpleChatFrameClient extends JFrame {
 		JToolBar toolBar = new JToolBar();
 		this.contentPane.add(toolBar, BorderLayout.NORTH);
 
-		JButton button = toolBar.add(this.sendAction);
-
 		Label label = new Label(Messages.getString("SimpleChatFrameClient.label.text")); //$NON-NLS-1$
 		label.setAlignment(Label.RIGHT);
 		toolBar.add(label);
