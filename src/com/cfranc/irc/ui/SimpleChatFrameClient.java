@@ -370,6 +370,8 @@ public class SimpleChatFrameClient extends JFrame {
 				// On mets à jour le nom du salon actif quand on change d'onglet
 				// => Libellé devant la zone de saisie
 				SimpleChatFrameClient.this.lblSender.setText(tabbedPaneSalon.getSelectedComponent().getName());
+				// inserted by : SCLAUDE  [18 Avr. 2017]. On vide le contenu de la zone de saisie de message une fois ce dernier envoyé
+				textField.setText("");
 			}
 
 			@Override
@@ -531,6 +533,8 @@ public class SimpleChatFrameClient extends JFrame {
 			 * Gérer le premier message de l'utilisateur dans un salon.
 			 */
 			this.sender.setMsgToSend(this.textField.getText(), idSalonEncours, "", "", "");
+			// inserted by : SCLAUDE  [18 Avr. 2017]. On vide le contenu de la zone de saisie de message une fois ce dernier envoyé
+			this.textField.setText("");
 			break;
 		case 1:// On veut un nouveau salon
 			this.sender.setMsgToSend("Création d'un salon", idSalonEncours, this.nouveauNomSalonSaisi,
