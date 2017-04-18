@@ -368,6 +368,8 @@ public class SimpleChatFrameClient extends JFrame {
 				// On mets à jour le nom du salon actif quand on change d'onglet
 				// => Libellé devant la zone de saisie
 				SimpleChatFrameClient.this.lblSender.setText(tabbedPaneSalon.getSelectedComponent().getName());
+				// inserted by : SCLAUDE  [18 Avr. 2017]. On vide le contenu de la zone de saisie de message une fois ce dernier envoyé
+				SimpleChatFrameClient.this.textField.setText("");
 			}
 
 			@Override
@@ -529,12 +531,17 @@ public class SimpleChatFrameClient extends JFrame {
 			 * Gérer le premier message de l'utilisateur dans un salon.
 			 */
 			this.sender.setMsgToSend(this.textField.getText(), idSalonEncours, "", "", "");
+			// inserted by : SCLAUDE  [18 Avr. 2017]. On vide le contenu de la zone de saisie de message une fois ce dernier envoyé
+			this.textField.setText("");
 			break;
 		case 1:// On veut un nouveau salon
-			this.sender.setMsgToSend("Création d'un salon", idSalonEncours, this.nouveauNomSalonSaisi,
-					ClientServerProtocol.NVSALON, "");
+			if (this.validateNomSalon(this.nouveauNomSalonSaisi)){
+				this.sender.setMsgToSend("Création d'un salon", idSalonEncours, this.nouveauNomSalonSaisi,
+						ClientServerProtocol.NVSALON, "");
+			}
 			//// Vider le champ de saisie du nouveau salon lorsque transmis au serveur (Peggy 18/04)
 			this.txtCrerUnSalon.setText("");
+
 			break;
 
 		case 2:// On ferme le salon
@@ -543,6 +550,20 @@ public class SimpleChatFrameClient extends JFrame {
 		default:
 			break;
 		}
+
+	}
+
+	/***
+	 *  Vérifie si un salon ne porte pas déjà le même nom
+	 * @return
+	 */
+	public boolean validateNomSalon(String nomSalon){
+		boolean result = true;
+		// Si el salon existe (id > 0) , on interdit la création du salon.
+		if(this.listSalon.retrieveIdSalon(nomSalon) > 0){
+			result = false;
+		}
+		return result;
 
 	}
 
@@ -562,7 +583,7 @@ public class SimpleChatFrameClient extends JFrame {
 				this.discussionDuSalonCree.getClientListModel());
 		// On rajoute le nouveau salon à la liste des salons gérée par ce client
 		this.listSalon.createOrRetrieveSalon(event.getSalon().getNomSalon(), SalonLst.DEFAULT_SALON_NOT_PRIVACY);
-		
+
 	}
 
 	// TODO (inserted by : JFYVART / [9 avr. 2017, 14:52:08]
