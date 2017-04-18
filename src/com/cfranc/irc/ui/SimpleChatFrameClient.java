@@ -533,8 +533,10 @@ public class SimpleChatFrameClient extends JFrame {
 			this.sender.setMsgToSend(this.textField.getText(), idSalonEncours, "", "", "");
 			break;
 		case 1:// On veut un nouveau salon
-			this.sender.setMsgToSend("Création d'un salon", idSalonEncours, this.nouveauNomSalonSaisi,
-					ClientServerProtocol.NVSALON, "");
+			if (this.validateNomSalon(this.nouveauNomSalonSaisi)){
+				this.sender.setMsgToSend("Création d'un salon", idSalonEncours, this.nouveauNomSalonSaisi,
+						ClientServerProtocol.NVSALON, "");
+			}
 			break;
 
 		case 2:// On ferme le salon
@@ -543,6 +545,20 @@ public class SimpleChatFrameClient extends JFrame {
 		default:
 			break;
 		}
+
+	}
+
+	/***
+	 *  Vérifie si un salon ne porte pas déjà le même nom
+	 * @return
+	 */
+	public boolean validateNomSalon(String nomSalon){
+		boolean result = true;
+		// Si el salon existe (id > 0) , on interdit la création du salon.
+		if(this.listSalon.retrieveIdSalon(nomSalon) > 0){
+			result = false;
+		}
+		return result;
 
 	}
 
