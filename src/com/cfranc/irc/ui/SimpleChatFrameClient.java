@@ -621,14 +621,16 @@ public class SimpleChatFrameClient extends JFrame {
 		int indexSuppr = this.tabbedPaneSalon.getSelectedIndex();
 		if (indexSuppr==0) {
 			System.out.println("suppression Salon Général impossible");
-		} else {
-			System.out.println("Fermeture salon :" + salonASupprimer + " - Index Tab : " + indexSuppr);
-			this.tabbedPaneSalon.remove(indexSuppr);
-			this.listSalon.deleteSalon(salonASupprimer);
-			// Focus onglet
-			this.tabbedPaneSalon.setSelectedIndex(SalonLst.DEFAULT_SALON_ID);
-			this.getLblSender().setText(SalonLst.DEFAULT_SALON_NAME);
 		}
-	}
+		else {
+		System.out.println("Fermeture salon :" + salonASupprimer + " - Index Tab : " + indexSuppr);
+		this.tabbedPaneSalon.remove(indexSuppr);
+		this.listSalon.deleteSalon(salonASupprimer);
+		// Focus onglet
+		this.tabbedPaneSalon.setSelectedIndex(SalonLst.DEFAULT_SALON_ID);
+		this.getLblSender().setText(SalonLst.DEFAULT_SALON_NAME);
 
+		}
+
+	}
 }
