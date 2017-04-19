@@ -53,4 +53,16 @@ public class DefaultListSalonModel extends DefaultListModel<Salon> {
 		this.collectionObservateur = collection;
 	}
 
+	public boolean isDefaultListSalonModelContainsNomSalon(String nomSalon){
+		boolean result = false;
+		for (int i = 0; i <this.size(); i++) {
+			Salon salonLu = this.getElementAt(i);
+			if (salonLu.getNomSalon().equals(nomSalon)){
+				result = true;
+			}
+		}
+
+		return result;
+	}
+
 }

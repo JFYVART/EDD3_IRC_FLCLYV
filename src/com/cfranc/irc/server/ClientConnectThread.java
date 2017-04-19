@@ -87,6 +87,8 @@ public class ClientConnectThread extends Thread {
 				dos.writeUTF(line);
 				// Puis on ajoute l'utilisateur lui même au salon
 				if (!iterable_salon.getNomSalon().equals(salonName)){
+					BroadcastThread.sendMessage(newUser, pwdUtilisateur, "Création d'un salon", ClientServerProtocol.NVSALON, salonId, iterable_salon.getNomSalon(),
+							recepteur, iterable_salon.getIdSalon());
 					BroadcastThread.addClient(iterable_salon.getIdSalon(), newUser, client, false);
 				}
 			}
