@@ -29,7 +29,7 @@ public class Salon {
 	public void setNomSalon(String nomSalon) {
 		this.nomSalon = nomSalon;
 	}
-
+	
 	//User userCreator = null; need it ?
 
 
