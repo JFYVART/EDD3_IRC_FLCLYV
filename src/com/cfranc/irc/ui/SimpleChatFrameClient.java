@@ -618,6 +618,7 @@ public class SimpleChatFrameClient extends JFrame {
 		int indexSuppr = this.tabbedPaneSalon.getSelectedIndex();
 		if (indexSuppr==0)
 			System.out.println("suppression Salon Général impossible");
+			
 		else {
 		System.out.println("Fermeture salon :" + salonASupprimer + " - Index Tab : " + indexSuppr);
 		this.tabbedPaneSalon.remove(indexSuppr);

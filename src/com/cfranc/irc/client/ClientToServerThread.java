@@ -330,6 +330,10 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 			this.pwd = "";
 			if(this.commande.equals(ClientServerProtocol.QUITSALON)){
 				supprimeNomSalonThread(this.nomSalon, this.idSalon);
+				// inserted by : PEGGY  [19 Avr. 2017] : 
+				// le user qui quitte un salon averti les autres utilisateurs du salon 
+				setMsgToSend(this.login+" quitte le salon", this.idSalon, this.nomSalon, "", "");
+				
 			} else {
 			String line = ClientServerProtocol.encodeProtocole_Ligne(this.login, this.pwd, this.msgToSend,
 					this.commande, this.idSalon, this.nomSalon, this.nomRecepteur, this.nouveauIdSalon);
