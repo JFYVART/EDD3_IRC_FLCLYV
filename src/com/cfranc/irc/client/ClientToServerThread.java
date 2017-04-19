@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import javax.swing.DefaultListModel;
 import javax.swing.text.BadLocationException;
@@ -327,11 +328,15 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 		if (this.msgToSend != null) {
 			// Nouveau protocole : on envoie le message de l'utilisateur courant
 			this.pwd = "";
+			if(this.commande.equals(ClientServerProtocol.QUITSALON)){
+				supprimeNomSalonThread(this.nomSalon, this.idSalon);
+			} else {
 			String line = ClientServerProtocol.encodeProtocole_Ligne(this.login, this.pwd, this.msgToSend,
 					this.commande, this.idSalon, this.nomSalon, this.nomRecepteur, this.nouveauIdSalon);
 			this.streamOut.writeUTF(line);
 			this.msgToSend = null;
 			this.streamOut.flush();
+			}
 			res = true;
 		}
 		return res;
@@ -364,6 +369,21 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 				this.discussionSalonEncours = this.createOrRetrieveDiscussionSalonByIdSalon(nouveauIdSalon);
 				EventSalonSUPPR eventSalonAdd = new EventSalonSUPPR(salonLu, this.discussionSalonEncours);
 				this.salonListModel.notifyObservers(eventSalonAdd);
+			}
+		}
+	}
+	
+	
+	/***
+	 * supprime (si besoin) le nom du salon à la liste des salon
+	 *
+	 * @param nomSalon
+	 */
+	public void supprimeNomSalonThread(String nomSalon, int idSalon) {
+		for (int i = 0; i < this.salonListModel.size(); i++) {
+			Salon salonEnCours = this.salonListModel.elementAt(i);
+			if((salonEnCours.getIdSalon()==idSalon) &&(salonEnCours.getNomSalon().equals(nomSalon))){
+				this.salonListModel.removeElement(salonEnCours);
 			}
 		}
 	}

@@ -109,6 +109,7 @@ public class SimpleChatFrameClient extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			System.out.println("Fermeture salon invoquée");
 			SimpleChatFrameClient.this.sendMessage(2);
+			
 		}
 
 		private Icon getIcon() {
@@ -555,10 +556,10 @@ public class SimpleChatFrameClient extends JFrame {
 
 		case 2:// On ferme le salon
 			// inserted by : PEGGY  [18 Avr. 2017] : on passe ici si clic sur "Fermeture salon"
-			String salonASupprimer = this.listSalon.getSalonName(idSalonEncours);
-			System.out.println("salon concerné :" + salonASupprimer +" " + idSalonEncours);
-			this.sender.setMsgToSend("Fermeture du salon", idSalonEncours, salonASupprimer, ClientServerProtocol.QUITSALON, "");
-			this.supprSalon(salonASupprimer);
+			System.out.println("salon concerné :" + nomSalonEncours +" " + idSalonEncours);
+			// On avertit le Thread qu'on supprime un salon 
+			this.sender.setMsgToSend("Fermeture du salon", idSalonEncours, nomSalonEncours, ClientServerProtocol.QUITSALON, "");
+			this.supprSalon(nomSalonEncours);
 			break;
 		default:
 			break;
@@ -617,12 +618,13 @@ public class SimpleChatFrameClient extends JFrame {
 		int indexSuppr = this.tabbedPaneSalon.getSelectedIndex();
 		if (indexSuppr==0)
 			System.out.println("suppression Salon Général impossible");
-			
 		else {
 		System.out.println("Fermeture salon :" + salonASupprimer + " - Index Tab : " + indexSuppr);
 		this.tabbedPaneSalon.remove(indexSuppr);
-		//réinit affichage pied de page
-		this.lblSender.setText(""); 
+		this.listSalon.deleteSalon(salonASupprimer);
+		// Focus onglet
+		this.tabbedPaneSalon.setSelectedIndex(SalonLst.DEFAULT_SALON_ID);
+		this.getLblSender().setText(SalonLst.DEFAULT_SALON_NAME);
 		}
 	}
 
