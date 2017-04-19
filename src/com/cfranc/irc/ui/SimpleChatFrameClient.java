@@ -89,6 +89,12 @@ public class SimpleChatFrameClient extends JFrame {
 	private SalonLst listSalon = new SalonLst();
 	private Document documentModel;
 	private ListModel<String> listModel;
+	
+	// Refactoring. Inserted by : SCLAUDE  [19 Avr. 2017]
+	private static final int SEND_MESSAGE = 0;
+	private static final int CREATE_SALON = 1;
+	private static final int CLOSE_SALON = 2;
+
 
 	// public void createOngletSalon(Document documentModel, String salonName)
 	// {}
@@ -99,6 +105,8 @@ public class SimpleChatFrameClient extends JFrame {
 	// private JTextField textField_NewSalon;
 
 	private class CloseSalonAction extends ResourceAction {
+
+
 		public CloseSalonAction() {
 			this.putValue(NAME, Messages.getString("SimpleChatFrameClient.11")); //$NON-NLS-1$
 			this.putValue(SHORT_DESCRIPTION, Messages.getString("SimpleChatFrameClient.15")); //$NON-NLS-1$
@@ -107,8 +115,9 @@ public class SimpleChatFrameClient extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
+
 			System.out.println("Fermeture salon invoquée");
-			SimpleChatFrameClient.this.sendMessage(2);
+			SimpleChatFrameClient.this.sendMessage(CLOSE_SALON);
 
 		}
 
@@ -130,6 +139,8 @@ public class SimpleChatFrameClient extends JFrame {
 	}
 
 	private class NewSalonAction extends ResourceAction {
+
+
 		public NewSalonAction() {
 			this.putValue(NAME, Messages.getString("SimpleChatFrameClient.9")); //$NON-NLS-1$
 			this.putValue(SHORT_DESCRIPTION, Messages.getString("SimpleChatFrameClient.14")); //$NON-NLS-1$
@@ -138,7 +149,7 @@ public class SimpleChatFrameClient extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			SimpleChatFrameClient.this.sendMessage(1);
+			SimpleChatFrameClient.this.sendMessage(CREATE_SALON);
 		}
 
 		private Icon getIcon() {
@@ -152,6 +163,8 @@ public class SimpleChatFrameClient extends JFrame {
 	}
 
 	private class SendAction extends ResourceAction {
+		
+
 		public SendAction() {
 			this.putValue(NAME, Messages.getString("SimpleChatFrameClient.3")); //$NON-NLS-1$
 			this.putValue(SHORT_DESCRIPTION, Messages.getString("SimpleChatFrameClient.2")); //$NON-NLS-1$
@@ -160,7 +173,7 @@ public class SimpleChatFrameClient extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			SimpleChatFrameClient.this.sendMessage(0);
+			SimpleChatFrameClient.this.sendMessage(SEND_MESSAGE);
 		}
 
 		private Icon getIcon() {
@@ -312,13 +325,6 @@ public class SimpleChatFrameClient extends JFrame {
 			}
 		});
 		toolBar.add(btnNewButton);
-		// On met en place la Combo Box pour le choix du Salon
-		// Choice choiceSalon = new Choice();
-		// toolBar.add(choiceSalon);
-		// doit afficher la liste des salons
-		// SCLU
-		// JComboBox choixSalon=new JComboBox();
-		// toolBar.add(choixSalon);
 
 		this.panelPiedPage = new JPanel();
 		this.contentPane.add(this.panelPiedPage, BorderLayout.SOUTH);
@@ -339,6 +345,9 @@ public class SimpleChatFrameClient extends JFrame {
 				Messages.getString("SimpleChatFrameClient.12")); //$NON-NLS-1$
 		this.textField.getActionMap().put(Messages.getString("SimpleChatFrameClient.13"), this.sendAction); //$NON-NLS-1$
 
+		// Message privé. Inserted by : SCLAUDE  [19 Avr. 2017]
+		//if(this.lblSender.getText().equals(""))
+		
 		JButton btnSend = new JButton(this.sendAction);
 		btnSend.setMnemonic(KeyEvent.VK_ENTER);
 		GroupLayout gl_panel = new GroupLayout(panel);
@@ -536,7 +545,7 @@ public class SimpleChatFrameClient extends JFrame {
 		String nomSalonEncours = this.getLblSender().getText();
 		int idSalonEncours = this.listSalon.retrieveIdSalon(nomSalonEncours);
 		switch (actionToPerform) {
-		case 0:// On envoie un message
+		case SEND_MESSAGE:// On envoie un message
 			// TODO (inserted by : JFYVART / [7 avr. 2017, 08:47:51]
 			// Si le salon existe : c'est une conversation normale
 			if (!this.validateNomSalon(nomSalonEncours)){
@@ -548,7 +557,7 @@ public class SimpleChatFrameClient extends JFrame {
 			}
 			this.textField.setText("");
 			break;
-		case 1:// On veut un nouveau salon
+		case CREATE_SALON:// On veut un nouveau salon
 			if (this.validateNomSalon(this.nouveauNomSalonSaisi)){
 				this.sender.setMsgToSend("Création d'un salon", idSalonEncours, this.nouveauNomSalonSaisi,
 						ClientServerProtocol.NVSALON, "");
@@ -557,13 +566,15 @@ public class SimpleChatFrameClient extends JFrame {
 			this.txtCrerUnSalon.setText("");
 			break;
 
-		case 2:// On ferme le salon
+		case CLOSE_SALON:// On ferme le salon
 			// inserted by : PEGGY  [18 Avr. 2017] : on passe ici si clic sur "Fermeture salon"
 			System.out.println("salon concerné :" + nomSalonEncours +" " + idSalonEncours);
 			// On avertit le Thread qu'on supprime un salon
 			this.sender.setMsgToSend("Fermeture du salon", idSalonEncours, nomSalonEncours, ClientServerProtocol.QUITSALON, "");
 			this.supprSalon(nomSalonEncours);
+
 			break;
+			
 		default:
 			break;
 		}
@@ -577,7 +588,8 @@ public class SimpleChatFrameClient extends JFrame {
 	public boolean validateNomSalon(String nomSalon){
 		boolean result = true;
 		// Si el salon existe (id > 0) , on interdit la création du salon.
-		if(this.listSalon.retrieveIdSalon(nomSalon) > 0){
+		// modified by : SCLAUDE  [19 Avr. 2017]. Mise de >=0 au lieu de >0 car le salon Général a idSalon=0
+		if(this.listSalon.retrieveIdSalon(nomSalon) >= 0){
 			result = false;
 		}
 		return result;
@@ -633,4 +645,5 @@ public class SimpleChatFrameClient extends JFrame {
 		}
 
 	}
+
 }
