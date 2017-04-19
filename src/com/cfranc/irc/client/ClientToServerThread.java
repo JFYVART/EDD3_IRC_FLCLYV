@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import javax.swing.DefaultListModel;
 import javax.swing.text.BadLocationException;
@@ -125,6 +124,27 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 	 */
 	public void ajouteNomSalon(String nomSalon, int nouveauIdSalon) {
 		if ((!nomSalon.isEmpty()) &&(!this.salonListModel.isDefaultListSalonModelContainsNomSalon(nomSalon))){
+			Salon salonLu = new Salon(nomSalon, SalonLst.DEFAULT_SALON_NOT_PRIVACY, nouveauIdSalon);
+			if (!this.salonListModel.contains(salonLu)) {
+				// On rajoute le salon à la liste des salons
+				this.salonListModel.addElement(salonLu);
+				// On crée une discussionSalon pour ce nouveau salon
+				this.discussionSalonEncours = this.createOrRetrieveDiscussionSalonByIdSalon(nouveauIdSalon);
+				this.salon_DiscussionSalonMap.put(new Integer(nouveauIdSalon),this.discussionSalonEncours);
+				// On prévient la vue de se raffraichir
+				EventSalonADD eventSalonAdd = new EventSalonADD(salonLu,this.discussionSalonEncours );
+				this.salonListModel.notifyObservers(eventSalonAdd);
+			}
+		}
+	}
+
+	/***
+	 * Ajoute (si besoin) le nom du salon à la liste des salon
+	 *
+	 * @param nomSalon
+	 */
+	public void ajouteNomSalonPrive(String nomSalon, int nouveauIdSalon) {
+		if ((!nomSalon.isEmpty()) &&(nomSalon.contains(this.login))&&(!this.salonListModel.isDefaultListSalonModelContainsNomSalon(nomSalon))){
 			Salon salonLu = new Salon(nomSalon, SalonLst.DEFAULT_SALON_NOT_PRIVACY, nouveauIdSalon);
 			if (!this.salonListModel.contains(salonLu)) {
 				// On rajoute le salon à la liste des salons
@@ -262,7 +282,7 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 		case ClientServerProtocol.NVMSGPRIVE: // le serveur informe de la
 			// création d'un salon privé
 			// (msg privé)
-			this.ajouteNomSalon(nomSalon, nouveauIdSalon);
+			this.ajouteNomSalonPrive(nomSalon, nouveauIdSalon);
 			break;
 
 		case ClientServerProtocol.QUITSALON: // le serveur informe de la
@@ -329,13 +349,13 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 			// Nouveau protocole : on envoie le message de l'utilisateur courant
 			this.pwd = "";
 			if(this.commande.equals(ClientServerProtocol.QUITSALON)){
-				supprimeNomSalonThread(this.nomSalon, this.idSalon);
+				this.supprimeNomSalonThread(this.nomSalon, this.idSalon);
 			} else {
-			String line = ClientServerProtocol.encodeProtocole_Ligne(this.login, this.pwd, this.msgToSend,
-					this.commande, this.idSalon, this.nomSalon, this.nomRecepteur, this.nouveauIdSalon);
-			this.streamOut.writeUTF(line);
-			this.msgToSend = null;
-			this.streamOut.flush();
+				String line = ClientServerProtocol.encodeProtocole_Ligne(this.login, this.pwd, this.msgToSend,
+						this.commande, this.idSalon, this.nomSalon, this.nomRecepteur, this.nouveauIdSalon);
+				this.streamOut.writeUTF(line);
+				this.msgToSend = null;
+				this.streamOut.flush();
 			}
 			res = true;
 		}
@@ -372,8 +392,8 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 			}
 		}
 	}
-	
-	
+
+
 	/***
 	 * supprime (si besoin) le nom du salon à la liste des salon
 	 *

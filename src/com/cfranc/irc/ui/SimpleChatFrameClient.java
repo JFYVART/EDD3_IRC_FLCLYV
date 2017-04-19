@@ -99,7 +99,7 @@ public class SimpleChatFrameClient extends JFrame {
 	// private JTextField textField_NewSalon;
 
 	private class CloseSalonAction extends ResourceAction {
-		public CloseSalonAction() {		
+		public CloseSalonAction() {
 			this.putValue(NAME, Messages.getString("SimpleChatFrameClient.11")); //$NON-NLS-1$
 			this.putValue(SHORT_DESCRIPTION, Messages.getString("SimpleChatFrameClient.15")); //$NON-NLS-1$
 			this.putValue(SMALL_ICON, this.getIcon());
@@ -109,7 +109,7 @@ public class SimpleChatFrameClient extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			System.out.println("Fermeture salon invoquée");
 			SimpleChatFrameClient.this.sendMessage(2);
-			
+
 		}
 
 		private Icon getIcon() {
@@ -436,13 +436,13 @@ public class SimpleChatFrameClient extends JFrame {
 		JCheckBoxMenuItem chckbxmntmLock = new JCheckBoxMenuItem(Messages.getString("SimpleChatFrameClient.10")); //$NON-NLS-1$
 		chckbxmntmLock.setEnabled(this.isScrollLocked);
 		popupMenu.add(chckbxmntmLock);
-////		//( Peggy 18/04) menu contextuel --> ajout fermeture salon
-//		JCheckBoxMenuItem chckbxmntmFermerSalon = new JCheckBoxMenuItem(
-//				Messages.getString("SimpleChatFrameClient.chckbxmntmNewCheckItem_1.text")); //$NON-NLS-1$
-//		popupMenu.add(chckbxmntmFermerSalon);
-//		System.out.println("clic sur fermer salon" + this.salonName);
-//		chckbxmntmFermerSalon.addActionListener(this.closeSalonAction);
-		
+		////		//( Peggy 18/04) menu contextuel --> ajout fermeture salon
+		//		JCheckBoxMenuItem chckbxmntmFermerSalon = new JCheckBoxMenuItem(
+		//				Messages.getString("SimpleChatFrameClient.chckbxmntmNewCheckItem_1.text")); //$NON-NLS-1$
+		//		popupMenu.add(chckbxmntmFermerSalon);
+		//		System.out.println("clic sur fermer salon" + this.salonName);
+		//		chckbxmntmFermerSalon.addActionListener(this.closeSalonAction);
+
 
 		scrollPaneText.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
 
@@ -474,59 +474,59 @@ public class SimpleChatFrameClient extends JFrame {
 		JMenuItem mntmEnvoyer = new JMenuItem(Messages.getString("SimpleChatFrameClient.8")); //$NON-NLS-1$
 		mntmEnvoyer.setAction(this.sendAction);
 		mnOutils.add(mntmEnvoyer);
-		
-		//inserted by : PEGGY  [18 Avr. 2017] : Ajout sous_menu de suppression du salon actif 
+
+		//inserted by : PEGGY  [18 Avr. 2017] : Ajout sous_menu de suppression du salon actif
 		JMenuItem mntmSupprimer = new JMenuItem(Messages.getString("SimpleChatFrameClient.15")); //$NON-NLS-1$
-		
+
 		mntmSupprimer.setAction(this.closeSalonAction);
 		mnOutils.add(mntmSupprimer);
-		
+
 		JSeparator separator = new JSeparator();
 		mnOutils.add(separator);
 		JCheckBoxMenuItem chckbxmntmNewCheckItem = new JCheckBoxMenuItem(this.lockAction);
 		mnOutils.add(chckbxmntmNewCheckItem);
-		
+
 	}
 
-//	public void creationMenuSalon(JMenuBar menuBar) {
-//		JMenu mnSalon;
-//		mnSalon = new JMenu(Messages.getString("SimpleChatFrameClient.mnSalon.text")); //$NON-NLS-1$
-//		mnSalon.setMnemonic('L');
-//		menuBar.add(mnSalon);
-		
-//
-//		JList list_salon = new JList();
-//		mnSalon.add(list_salon);
-//		// alimenter list
-//
-//		JSeparator separator_1 = new JSeparator();
-//		mnSalon.add(separator_1);
-//
-//		/**
-//		 * Ouvrir fenêtre création salon
-//		 */
-//		JMenuItem mntmCreateSalon = new JMenuItem(Messages.getString("SimpleChatFrameClient.mntmCrerUnNouveau.text")); //$NON-NLS-1$
-//
-//		// mntmCreateSalon.addFocusListener(new FocusAdapter() {
-//		// @Override
-//		// public void focusGained(FocusEvent e) {
-//		// }
-//		// });
-//		// mntmCreateSalon.addActionListener(new ActionListener() {
-//		// public void actionPerformed(ActionEvent e) {
-//		// newSalonFrame.setVisible(true);
-//		// nouveauNomSalonSaisi = newSalonFrame.newSalon;
-//		// System.out.println("Nom du nouveau salon demandé : " +
-//		// nouveauNomSalonSaisi);
-//		// }
-//		// });
-//
-//		mntmCreateSalon.setAction(this.newSalondAction);
-//		mnSalon.add(mntmCreateSalon);
-//		JMenuItem mntmFermerSalon = new JMenuItem(Messages.getString("SimpleChatFrameClient.mntmNewMenuItem.text")); //$NON-NLS-1$
-//		mnSalon.add(mntmFermerSalon);
-//		mntmFermerSalon.setAction(this.closeSalonAction);	
-//	}
+	//	public void creationMenuSalon(JMenuBar menuBar) {
+	//		JMenu mnSalon;
+	//		mnSalon = new JMenu(Messages.getString("SimpleChatFrameClient.mnSalon.text")); //$NON-NLS-1$
+	//		mnSalon.setMnemonic('L');
+	//		menuBar.add(mnSalon);
+
+	//
+	//		JList list_salon = new JList();
+	//		mnSalon.add(list_salon);
+	//		// alimenter list
+	//
+	//		JSeparator separator_1 = new JSeparator();
+	//		mnSalon.add(separator_1);
+	//
+	//		/**
+	//		 * Ouvrir fenêtre création salon
+	//		 */
+	//		JMenuItem mntmCreateSalon = new JMenuItem(Messages.getString("SimpleChatFrameClient.mntmCrerUnNouveau.text")); //$NON-NLS-1$
+	//
+	//		// mntmCreateSalon.addFocusListener(new FocusAdapter() {
+	//		// @Override
+	//		// public void focusGained(FocusEvent e) {
+	//		// }
+	//		// });
+	//		// mntmCreateSalon.addActionListener(new ActionListener() {
+	//		// public void actionPerformed(ActionEvent e) {
+	//		// newSalonFrame.setVisible(true);
+	//		// nouveauNomSalonSaisi = newSalonFrame.newSalon;
+	//		// System.out.println("Nom du nouveau salon demandé : " +
+	//		// nouveauNomSalonSaisi);
+	//		// }
+	//		// });
+	//
+	//		mntmCreateSalon.setAction(this.newSalondAction);
+	//		mnSalon.add(mntmCreateSalon);
+	//		JMenuItem mntmFermerSalon = new JMenuItem(Messages.getString("SimpleChatFrameClient.mntmNewMenuItem.text")); //$NON-NLS-1$
+	//		mnSalon.add(mntmFermerSalon);
+	//		mntmFermerSalon.setAction(this.closeSalonAction);
+	//	}
 
 	public JLabel getLblSender() {
 		return this.lblSender;
@@ -538,11 +538,14 @@ public class SimpleChatFrameClient extends JFrame {
 		switch (actionToPerform) {
 		case 0:// On envoie un message
 			// TODO (inserted by : JFYVART / [7 avr. 2017, 08:47:51]
-			/***
-			 * Gérer le premier message de l'utilisateur dans un salon.
-			 */
-			this.sender.setMsgToSend(this.textField.getText(), idSalonEncours, "", "", "");
-			// inserted by : SCLAUDE  [18 Avr. 2017]. On vide le contenu de la zone de saisie de message une fois ce dernier envoyé
+			// Si le salon existe : c'est une conversation normale
+			if (!this.validateNomSalon(nomSalonEncours)){
+				this.sender.setMsgToSend(this.textField.getText(), idSalonEncours, "", "", "");
+			} else // C'est une conversation privée aver un utilisateur donné.
+			{
+				this.sender.setMsgToSend(this.textField.getText(), idSalonEncours, "", ClientServerProtocol.NVMSGPRIVE, nomSalonEncours);
+
+			}
 			this.textField.setText("");
 			break;
 		case 1:// On veut un nouveau salon
@@ -550,14 +553,14 @@ public class SimpleChatFrameClient extends JFrame {
 				this.sender.setMsgToSend("Création d'un salon", idSalonEncours, this.nouveauNomSalonSaisi,
 						ClientServerProtocol.NVSALON, "");
 			}
-			// inserted by : PEGGY  [18 Avr. 2017] : Vider le champ de saisie du nouveau salon lorsque transmis au serveur 
+			// inserted by : PEGGY  [18 Avr. 2017] : Vider le champ de saisie du nouveau salon lorsque transmis au serveur
 			this.txtCrerUnSalon.setText("");
 			break;
 
 		case 2:// On ferme le salon
 			// inserted by : PEGGY  [18 Avr. 2017] : on passe ici si clic sur "Fermeture salon"
 			System.out.println("salon concerné :" + nomSalonEncours +" " + idSalonEncours);
-			// On avertit le Thread qu'on supprime un salon 
+			// On avertit le Thread qu'on supprime un salon
 			this.sender.setMsgToSend("Fermeture du salon", idSalonEncours, nomSalonEncours, ClientServerProtocol.QUITSALON, "");
 			this.supprSalon(nomSalonEncours);
 			break;
@@ -611,20 +614,20 @@ public class SimpleChatFrameClient extends JFrame {
 	public void supprSalon(EventSalonSUPPR event) {
 		System.out.println("Fermeture du salon :" + event.getSalon().getNomSalon());
 	}
-	
-	// inserted by : PEGGY  [18 Avr. 2017] : suppression onglet salon actif 
+
+	// inserted by : PEGGY  [18 Avr. 2017] : suppression onglet salon actif
 	public void supprSalon(String salonASupprimer) {
-		
+
 		int indexSuppr = this.tabbedPaneSalon.getSelectedIndex();
-		if (indexSuppr==0)
+		if (indexSuppr==0) {
 			System.out.println("suppression Salon Général impossible");
-		else {
-		System.out.println("Fermeture salon :" + salonASupprimer + " - Index Tab : " + indexSuppr);
-		this.tabbedPaneSalon.remove(indexSuppr);
-		this.listSalon.deleteSalon(salonASupprimer);
-		// Focus onglet
-		this.tabbedPaneSalon.setSelectedIndex(SalonLst.DEFAULT_SALON_ID);
-		this.getLblSender().setText(SalonLst.DEFAULT_SALON_NAME);
+		} else {
+			System.out.println("Fermeture salon :" + salonASupprimer + " - Index Tab : " + indexSuppr);
+			this.tabbedPaneSalon.remove(indexSuppr);
+			this.listSalon.deleteSalon(salonASupprimer);
+			// Focus onglet
+			this.tabbedPaneSalon.setSelectedIndex(SalonLst.DEFAULT_SALON_ID);
+			this.getLblSender().setText(SalonLst.DEFAULT_SALON_NAME);
 		}
 	}
 
