@@ -123,7 +123,7 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 	 * @param nomSalon
 	 */
 	public void ajouteNomSalon(String nomSalon, int nouveauIdSalon) {
-		if (!nomSalon.isEmpty()) {
+		if ((!nomSalon.isEmpty()) &&(!this.salonListModel.isDefaultListSalonModelContainsNomSalon(nomSalon))){
 			Salon salonLu = new Salon(nomSalon, SalonLst.DEFAULT_SALON_NOT_PRIVACY, nouveauIdSalon);
 			if (!this.salonListModel.contains(salonLu)) {
 				// On rajoute le salon à la liste des salons
@@ -240,6 +240,8 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 		case ClientServerProtocol.ADD: // Un user arrive dans le salon
 			if (!this.clientListModel.contains(loginUtilisateur)) {
 				this.clientListModel.addElement(loginUtilisateur);
+				this.receiveMessage(loginUtilisateur, " entre dans le salon...");
+			} else if(!this.salonListModel.isDefaultListSalonModelContainsNomSalon(nomSalon)){
 				this.receiveMessage(loginUtilisateur, " entre dans le salon...");
 			}
 			break;

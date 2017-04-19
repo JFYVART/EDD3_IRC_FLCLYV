@@ -66,25 +66,50 @@ public class ClientConnectThread extends Thread {
 		User newUser = new User(loginUtilisateur, loginUtilisateur, salonId);
 		boolean isUserOK = this.authentication(newUser, salonId);
 		if (isUserOK) {
-
 			ServerToClientThread client = new ServerToClientThread(newUser, socket, this.clientListModel);
+
 			// Nouveau protocole : On accepte la connexion.
 			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
 					ClientServerProtocol.OK, salonId, salonName, recepteur, nouveauIdSalon);
 
 			dos.writeUTF(line);
-
 			// Add user
 			if (BroadcastThread.addClient(salonId, newUser, client, false)) {
 				client.start();
 				this.clientListModel.addElement(newUser.getLogin());
-
-				// Nouveau protocole : On signale l'arrivée de cet utilisateur
-				line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
-						ClientServerProtocol.ADD, salonId, salonName, recepteur, nouveauIdSalon);
-
-				dos.writeUTF(line);
 			}
+
+			// On parcoure tous les autres salons
+			for (Salon iterable_salon : BroadcastThread.mySalons.getLstSalons()) {
+				// Nouveau protocole : On signale l'arrivée de cet utilisateur aux utilisateurs déjà en place
+				line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
+						ClientServerProtocol.ADD, salonId, iterable_salon.getNomSalon(), recepteur, iterable_salon.getIdSalon());
+				dos.writeUTF(line);
+				// Puis on ajoute l'utilisateur lui même au salon
+				if (!iterable_salon.getNomSalon().equals(salonName)){
+					BroadcastThread.sendMessage(newUser, pwdUtilisateur, "Création d'un salon", ClientServerProtocol.NVSALON, salonId, iterable_salon.getNomSalon(),
+							recepteur, iterable_salon.getIdSalon());
+					BroadcastThread.addClient(iterable_salon.getIdSalon(), newUser, client, false);
+				}
+			}
+			//			ServerToClientThread client = new ServerToClientThread(newUser, socket, this.clientListModel);
+			//			// Nouveau protocole : On accepte la connexion.
+			//			line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
+			//					ClientServerProtocol.OK, salonId, salonName, recepteur, nouveauIdSalon);
+			//
+			//			dos.writeUTF(line);
+			//
+			//			// Add user
+			//			if (BroadcastThread.addClient(salonId, newUser, client, false)) {
+			//				client.start();
+			//				this.clientListModel.addElement(newUser.getLogin());
+			//
+			//				// Nouveau protocole : On signale l'arrivée de cet utilisateur
+			//				line = ClientServerProtocol.encodeProtocole_Ligne(loginUtilisateur, pwdUtilisateur, msg,
+			//						ClientServerProtocol.ADD, salonId, salonName, recepteur, nouveauIdSalon);
+			//
+			//				dos.writeUTF(line);
+			//			}
 		} else {
 			System.out.println("socket.close()");
 
