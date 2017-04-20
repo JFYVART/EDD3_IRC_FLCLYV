@@ -1,6 +1,7 @@
 package com.cfranc.irc.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -45,6 +46,8 @@ import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
@@ -96,7 +99,8 @@ public class SimpleChatFrameClient extends JFrame {
 	private static final int CREATE_SALON = 1;
 	private static final int CLOSE_SALON = 2;
 
-
+	  Color defaultBackColor; // default background color of tab
+	
 	private String login;
 
 
@@ -386,6 +390,7 @@ public class SimpleChatFrameClient extends JFrame {
 				SimpleChatFrameClient.this.lblSender.setText(tabbedPaneSalon.getSelectedComponent().getName());
 				// inserted by : SCLAUDE  [18 Avr. 2017]. On vide le contenu de la zone de saisie de message une fois ce dernier envoyé
 				SimpleChatFrameClient.this.textField.setText("");
+				tabbedPaneSalon.setBackgroundAt(tabbedPaneSalon.getSelectedIndex(),defaultBackColor );
 			}
 
 			@Override
@@ -443,6 +448,40 @@ public class SimpleChatFrameClient extends JFrame {
 		JTextPane textArea = new JTextPane((StyledDocument) documentModelOnglet);
 		textArea.setEnabled(false);
 		JScrollPane scrollPaneText = new JScrollPane(textArea);
+		
+		// inserted by : STEPHANE/PEGGY  [20 Avr. 2017] : ajout listener sur discussion salon
+				//Changement couleur onglet
+		documentModelOnglet.addDocumentListener(new DocumentListener() {
+			
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				System.out.println("???");
+				
+			}
+			
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				System.out.println("Changement couleur tab salon");
+				int indiceOnglet = 0;
+				for (int i = 0; i < tabbedPaneSalon.getTabCount(); i++) {
+					if (salonName.equals(tabbedPaneSalon.getTitleAt(i))){
+						indiceOnglet = i;
+					}
+				}
+				defaultBackColor = tabbedPaneSalon.getBackgroundAt(indiceOnglet); //On sauvegarde la couleur de fond
+				tabbedPaneSalon.setBackgroundAt(indiceOnglet,Color.green);
+				tabbedPaneSalon.requestFocusInWindow();
+				
+			}
+			
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				System.out.println("Changement ???");
+			}
+		});
+			
+		
+				
 
 		JPopupMenu popupMenu = new JPopupMenu();
 		addPopup(textArea, popupMenu);
