@@ -141,7 +141,7 @@ public class SimpleChatClientApp implements Observer {
 		// Init GUI
 		this.frame = new SimpleChatFrameClient(clientToServerThread, this.clientListModel, this.documentModel, this.salonListModel, this.clientName );
 		this.frame.setTitle(
-				this.frame.getTitle() + " : " + this.clientName + " connected to " + this.serverName + ":" + this.serverPort);
+				this.frame.getTitle() + " : " + this.clientName);
 		((JFrame) this.frame).setVisible(true);
 		this.frame.addWindowListener(new WindowListener() {
 
