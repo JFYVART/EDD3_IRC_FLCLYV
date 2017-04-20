@@ -89,11 +89,15 @@ public class SimpleChatFrameClient extends JFrame {
 	private SalonLst listSalon = new SalonLst();
 	private Document documentModel;
 	private ListModel<String> listModel;
+
 	
 	// Refactoring. Inserted by : SCLAUDE  [19 Avr. 2017]
 	private static final int SEND_MESSAGE = 0;
 	private static final int CREATE_SALON = 1;
 	private static final int CLOSE_SALON = 2;
+
+
+	private String login;
 
 
 	// public void createOngletSalon(Document documentModel, String salonName)
@@ -240,7 +244,7 @@ public class SimpleChatFrameClient extends JFrame {
 
 	public SimpleChatFrameClient() {
 		this(null, new DefaultListModel<String>(), SimpleChatClientApp.defaultDocumentModel(),
-				new DefaultListSalonModel());
+				new DefaultListSalonModel(), "");
 	}
 
 	/**
@@ -248,7 +252,7 @@ public class SimpleChatFrameClient extends JFrame {
 	 */
 
 	public SimpleChatFrameClient(IfSenderModel sender, ListModel<String> clientListModel, Document documentModel,
-			DefaultListSalonModel salonListModel) {
+			DefaultListSalonModel salonListModel, String login) {
 		this.sender = sender;
 		this.documentModel = documentModel;
 		this.listModel = clientListModel;
@@ -257,6 +261,7 @@ public class SimpleChatFrameClient extends JFrame {
 
 		this.newSalonFrame = new AddNewSalonFrame();
 		this.newSalonFrame.setVisible(false);
+		this.login = login;
 
 		this.setTitle(Messages.getString("SimpleChatFrameClient.4")); //$NON-NLS-1$
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -548,7 +553,7 @@ public class SimpleChatFrameClient extends JFrame {
 		case SEND_MESSAGE:// On envoie un message
 			// TODO (inserted by : JFYVART / [7 avr. 2017, 08:47:51]
 			// Si le salon existe : c'est une conversation normale
-			if (!this.validateNomSalon(nomSalonEncours)){
+			if (!this.validateCreationNomSalon(nomSalonEncours)){
 				this.sender.setMsgToSend(this.textField.getText(), idSalonEncours, "", "", "");
 			} else // C'est une conversation privée aver un utilisateur donné.
 			{
@@ -557,8 +562,11 @@ public class SimpleChatFrameClient extends JFrame {
 			}
 			this.textField.setText("");
 			break;
+
 		case CREATE_SALON:// On veut un nouveau salon
-			if (this.validateNomSalon(this.nouveauNomSalonSaisi)){
+
+			if (this.validateCreationNomSalon(this.nouveauNomSalonSaisi)){
+
 				this.sender.setMsgToSend("Création d'un salon", idSalonEncours, this.nouveauNomSalonSaisi,
 						ClientServerProtocol.NVSALON, "");
 			}
@@ -583,13 +591,19 @@ public class SimpleChatFrameClient extends JFrame {
 
 	/***
 	 *  Vérifie si un salon ne porte pas déjà le même nom
+	 *  - Le nom du salon ne doit pas être celui d'un salon existant
+	 *  - le nom du salon ne doit pas être celui de l'utilisateur (msg vers lui même)
+	 *  -
 	 * @return
 	 */
-	public boolean validateNomSalon(String nomSalon){
+	public boolean validateCreationNomSalon(String nomSalon){
 		boolean result = true;
-		// Si el salon existe (id > 0) , on interdit la création du salon.
-		// modified by : SCLAUDE  [19 Avr. 2017]. Mise de >=0 au lieu de >0 car le salon Général a idSalon=0
-		if(this.listSalon.retrieveIdSalon(nomSalon) >= 0){
+
+		// Si le salon existe on interdit la création du salon (autre que celui général).
+		if(this.listSalon.isSalonNameUsed(nomSalon)) {
+			result = false;
+		}
+		if (nomSalon.equals(this.login)){
 			result = false;
 		}
 		return result;
@@ -635,12 +649,12 @@ public class SimpleChatFrameClient extends JFrame {
 			System.out.println("suppression Salon Général impossible");
 		}
 		else {
-		System.out.println("Fermeture salon :" + salonASupprimer + " - Index Tab : " + indexSuppr);
-		this.tabbedPaneSalon.remove(indexSuppr);
-		this.listSalon.deleteSalon(salonASupprimer);
-		// Focus onglet
-		this.tabbedPaneSalon.setSelectedIndex(SalonLst.DEFAULT_SALON_ID);
-		this.getLblSender().setText(SalonLst.DEFAULT_SALON_NAME);
+			System.out.println("Fermeture salon :" + salonASupprimer + " - Index Tab : " + indexSuppr);
+			this.tabbedPaneSalon.remove(indexSuppr);
+			this.listSalon.deleteSalon(salonASupprimer);
+			// Focus onglet
+			this.tabbedPaneSalon.setSelectedIndex(SalonLst.DEFAULT_SALON_ID);
+			this.getLblSender().setText(SalonLst.DEFAULT_SALON_NAME);
 
 		}
 

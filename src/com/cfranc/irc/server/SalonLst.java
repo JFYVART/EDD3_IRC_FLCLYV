@@ -88,7 +88,7 @@ public class SalonLst {
 	 * Cherche la position du salon dans lstSalon
 	 *
 	 * @param name
-	 * @return
+	 * @return id salon (position > 0 si salon trouvé) ou 0 si non trouvé.
 	 */
 	public int retrieveIdSalon(String name) {
 		// init Salon
@@ -103,6 +103,18 @@ public class SalonLst {
 		}
 		return idSalon;
 	}
+
+	public boolean isSalonNameUsed(String salonName){
+		boolean found = false;
+
+		for (Salon salon : this.lstSalons) {
+			if (salon.getNomSalon().equals(salonName)) {
+				found = true;
+			}
+		}
+		return found;
+	}
+
 
 	public void set(Salon salon) {
 		this.lstSalons.add(salon);
