@@ -18,6 +18,7 @@ import javax.swing.text.StyledDocument;
 import com.cfranc.irc.ClientServerProtocol;
 import com.cfranc.irc.server.Salon;
 import com.cfranc.irc.server.SalonLst;
+import com.cfranc.irc.server.User;
 import com.cfranc.irc.ui.SimpleChatClientApp;
 
 public class ClientToServerThread extends Thread implements IfSenderModel {
@@ -143,7 +144,7 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 	 *
 	 * @param nomSalon
 	 */
-	public void ajouteNomSalonPrive(String nomSalon, int nouveauIdSalon) {
+	public void ajouteNomSalonPrive(String nomSalon, int nouveauIdSalon, String nomUser, String msg) {
 		if ((!nomSalon.isEmpty()) &&(nomSalon.contains(this.login))&&(!this.salonListModel.isDefaultListSalonModelContainsNomSalon(nomSalon))){
 			Salon salonLu = new Salon(nomSalon, SalonLst.DEFAULT_SALON_NOT_PRIVACY, nouveauIdSalon);
 			if (!this.salonListModel.contains(salonLu)) {
@@ -151,6 +152,20 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 				this.salonListModel.addElement(salonLu);
 				// On crée une discussionSalon pour ce nouveau salon
 				this.discussionSalonEncours = this.createOrRetrieveDiscussionSalonByIdSalon(nouveauIdSalon);
+				this.documentModel = this.discussionSalonEncours.getDocumentModel();
+
+				if (msg != null) {
+					Style styleBI = this.documentModel.getStyle(SimpleChatClientApp.BOLD_ITALIC);
+					Style styleGP = this.documentModel.getStyle(SimpleChatClientApp.GRAY_PLAIN);
+					try {
+						this.documentModel.insertString(this.documentModel.getLength(), nomUser + " : ", styleBI);
+						this.documentModel.insertString(this.documentModel.getLength(), msg + "\n", styleGP);
+					} catch (BadLocationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+
 				this.salon_DiscussionSalonMap.put(new Integer(nouveauIdSalon),this.discussionSalonEncours);
 				// On prévient la vue de se raffraichir
 				EventSalonADD eventSalonAdd = new EventSalonADD(salonLu,this.discussionSalonEncours );
@@ -282,13 +297,14 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 		case ClientServerProtocol.NVMSGPRIVE: // le serveur informe de la
 			// création d'un salon privé
 			// (msg privé)
-			this.ajouteNomSalonPrive(nomSalon, nouveauIdSalon);
+			this.ajouteNomSalonPrive(nomSalon, nouveauIdSalon, loginUtilisateur, msg);
+
 			break;
 
 		case ClientServerProtocol.QUITSALON: // le serveur informe de la
 			// suppression d'un salon
 			// (public ou privé)
-			this.supprimeNomSalon(nomSalon, nouveauIdSalon);
+			this.supprimeNomSalon(nomSalon, idSalon, loginUtilisateur);
 			break;
 
 		default: // Réception d'un message de tchat (cas général)
@@ -349,19 +365,15 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 			// Nouveau protocole : on envoie le message de l'utilisateur courant
 			this.pwd = "";
 			if(this.commande.equals(ClientServerProtocol.QUITSALON)){
-
 				this.supprimeNomSalonThread(this.nomSalon, this.idSalon);
-				// inserted by : PEGGY  [19 Avr. 2017] : 
-				// le user qui quitte un salon averti les autres utilisateurs du salon 
-				setMsgToSend(this.login+" quitte le salon", this.idSalon, this.nomSalon, "", "");
-				
-			} else {
-				String line = ClientServerProtocol.encodeProtocole_Ligne(this.login, this.pwd, this.msgToSend,
-						this.commande, this.idSalon, this.nomSalon, this.nomRecepteur, this.nouveauIdSalon);
-				this.streamOut.writeUTF(line);
-				this.msgToSend = null;
-				this.streamOut.flush();
+
 			}
+			String line = ClientServerProtocol.encodeProtocole_Ligne(this.login, this.pwd, this.msgToSend,
+					this.commande, this.idSalon, this.nomSalon, this.nomRecepteur, this.nouveauIdSalon);
+			this.streamOut.writeUTF(line);
+			this.msgToSend = null;
+			this.streamOut.flush();
+
 			res = true;
 		}
 		return res;
@@ -386,14 +398,23 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 	 *
 	 * @param nomSalon
 	 */
-	public void supprimeNomSalon(String nomSalon, int nouveauIdSalon) {
+	public void supprimeNomSalon(String nomSalon, int nouveauIdSalon, String nomUser) {
 		if (!nomSalon.isEmpty()) {
-			Salon salonLu = new Salon(nomSalon, SalonLst.DEFAULT_SALON_NOT_PRIVACY, nouveauIdSalon);
-			if (!this.salonListModel.contains(salonLu)) {
-				this.salonListModel.addElement(salonLu);
-				this.discussionSalonEncours = this.createOrRetrieveDiscussionSalonByIdSalon(nouveauIdSalon);
-				EventSalonSUPPR eventSalonAdd = new EventSalonSUPPR(salonLu, this.discussionSalonEncours);
-				this.salonListModel.notifyObservers(eventSalonAdd);
+			// on retrouve le salon correpondant au nom et à l'identifiant que l'on nous donne
+			for (int i = 0; i < this.salonListModel.size(); i++) {
+				Salon salonEnCours = this.salonListModel.elementAt(i);
+				if((salonEnCours.getIdSalon()==nouveauIdSalon) &&(salonEnCours.getNomSalon().equals(nomSalon))){
+					// Si le salon est trouvé : On retrouve la discussionSalon liée
+					this.discussionSalonEncours = this.createOrRetrieveDiscussionSalonByIdSalon(nouveauIdSalon);
+					// On crée un EventSalonSUPPR
+					User userPartant = new User(nomUser, "", nouveauIdSalon);
+					// On retrouve le
+					EventSalonSUPPR eventSalonAdd = new EventSalonSUPPR(salonEnCours, this.discussionSalonEncours, userPartant);
+					// On avertit la vue que l'on supprime le salon.
+					this.salonListModel.notifyObservers(eventSalonAdd);
+					// On supprime l'utilisateur du salon
+					this.clientListModel.removeElement(nomUser);
+				}
 			}
 		}
 	}

@@ -90,7 +90,7 @@ public class SimpleChatFrameClient extends JFrame {
 	private Document documentModel;
 	private ListModel<String> listModel;
 
-	
+
 	// Refactoring. Inserted by : SCLAUDE  [19 Avr. 2017]
 	private static final int SEND_MESSAGE = 0;
 	private static final int CREATE_SALON = 1;
@@ -167,7 +167,7 @@ public class SimpleChatFrameClient extends JFrame {
 	}
 
 	private class SendAction extends ResourceAction {
-		
+
 
 		public SendAction() {
 			this.putValue(NAME, Messages.getString("SimpleChatFrameClient.3")); //$NON-NLS-1$
@@ -352,7 +352,7 @@ public class SimpleChatFrameClient extends JFrame {
 
 		// Message privé. Inserted by : SCLAUDE  [19 Avr. 2017]
 		//if(this.lblSender.getText().equals(""))
-		
+
 		JButton btnSend = new JButton(this.sendAction);
 		btnSend.setMnemonic(KeyEvent.VK_ENTER);
 		GroupLayout gl_panel = new GroupLayout(panel);
@@ -582,7 +582,7 @@ public class SimpleChatFrameClient extends JFrame {
 			this.supprSalon(nomSalonEncours);
 
 			break;
-			
+
 		default:
 			break;
 		}
@@ -645,7 +645,7 @@ public class SimpleChatFrameClient extends JFrame {
 	public void supprSalon(String salonASupprimer) {
 
 		int indexSuppr = this.tabbedPaneSalon.getSelectedIndex();
-		if (indexSuppr==0) {
+		if (indexSuppr==SalonLst.DEFAULT_SALON_ID) {
 			System.out.println("suppression Salon Général impossible");
 		}
 		else {
