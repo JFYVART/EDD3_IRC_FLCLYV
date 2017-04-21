@@ -1,6 +1,7 @@
 package com.cfranc.irc.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -45,6 +46,8 @@ import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
@@ -56,6 +59,7 @@ import com.cfranc.irc.ClientServerProtocol;
 import com.cfranc.irc.client.DefaultListSalonModel;
 import com.cfranc.irc.client.DiscussionSalon;
 import com.cfranc.irc.client.EventSalonADD;
+import com.cfranc.irc.client.EventSalonNewMsg;
 import com.cfranc.irc.client.EventSalonSUPPR;
 import com.cfranc.irc.client.IfSenderModel;
 import com.cfranc.irc.server.Salon;
@@ -99,6 +103,8 @@ public class SimpleChatFrameClient extends JFrame {
 
 	private String login;
 
+	private  Color defaultBackColor ;
+	private boolean isChangeColorNeeded = false;
 
 	// public void createOngletSalon(Document documentModel, String salonName)
 	// {}
@@ -373,6 +379,9 @@ public class SimpleChatFrameClient extends JFrame {
 
 	}
 
+
+
+
 	public void createOngletSalon(Document documentModelOnglet, JTabbedPane tabbedPaneSalon, Salon salon,
 			ListModel<String> clientListModelOnglet) {
 
@@ -386,6 +395,9 @@ public class SimpleChatFrameClient extends JFrame {
 				SimpleChatFrameClient.this.lblSender.setText(tabbedPaneSalon.getSelectedComponent().getName());
 				// inserted by : SCLAUDE  [18 Avr. 2017]. On vide le contenu de la zone de saisie de message une fois ce dernier envoyé
 				SimpleChatFrameClient.this.textField.setText("");
+				// Le clic sur l'onglet arrête le chgt de couleur de l'onglet
+				SimpleChatFrameClient.this.isChangeColorNeeded = false;
+				SimpleChatFrameClient.this.gereColorisationOnglet();
 			}
 
 			@Override
@@ -424,6 +436,27 @@ public class SimpleChatFrameClient extends JFrame {
 		panelSalon.add(splitPane, BorderLayout.CENTER);
 
 		JList<String> list = new JList<String>(clientListModelOnglet);
+
+		documentModelOnglet.addDocumentListener(new DocumentListener() {
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				SimpleChatFrameClient.this.gereColorisationOnglet();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+		});
+
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.addListSelectionListener(new ListSelectionListener() {
 			@Override
@@ -469,6 +502,27 @@ public class SimpleChatFrameClient extends JFrame {
 		});
 
 		splitPane.setRightComponent(scrollPaneText);
+	}
+
+	protected void gereColorisationOnglet() {
+		int idPositionOnglet = 0;
+		// Recherche du salon concerné.
+		for (int i = 0; i < this.tabbedPaneSalon.getTabCount(); i++) {
+			if(this.tabbedPaneSalon.getTitleAt(i).equals(SimpleChatFrameClient.this.salonName)){
+				idPositionOnglet = i;
+			}
+		}
+		// on sauvegarde la couleur de fond
+		SimpleChatFrameClient.this.defaultBackColor = this.tabbedPaneSalon.getForegroundAt(idPositionOnglet);
+		// On change la couleur de l'onglet si on a l'autorisation
+		if (SimpleChatFrameClient.this.isChangeColorNeeded){
+			System.out.println("Chgt Couleur de fond  : Vert");
+			this.tabbedPaneSalon.setForegroundAt(idPositionOnglet, Color.GREEN);
+		} else {
+			System.out.println("Chgt Couleur de fond  : BackGround");
+			this.tabbedPaneSalon.setForegroundAt(idPositionOnglet, SimpleChatFrameClient.this.defaultBackColor);
+		}
+		this.tabbedPaneSalon.repaint();
 	}
 
 	public void creationMenuFichier(JMenuBar menuBar) {
@@ -639,6 +693,16 @@ public class SimpleChatFrameClient extends JFrame {
 
 	public void supprSalon(EventSalonSUPPR event) {
 		System.out.println("Fermeture du salon :" + event.getSalon().getNomSalon());
+	}
+
+	public void colorSalon(EventSalonNewMsg event) {
+		if(event.getIsSalonToColor()){
+			System.out.println("Autorisation colorisation");
+		} else {
+			System.out.println("Interdiction colorisation");
+		}
+		this.isChangeColorNeeded = event.getIsSalonToColor();
+		this.gereColorisationOnglet();
 	}
 
 	// inserted by : PEGGY  [18 Avr. 2017] : suppression onglet salon actif

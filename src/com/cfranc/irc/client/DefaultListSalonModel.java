@@ -32,6 +32,8 @@ public class DefaultListSalonModel extends DefaultListModel<Salon> {
 				observer.addSalon((EventSalonADD)event);
 			} else if (event instanceof EventSalonSUPPR) {
 				observer.supprSalon((EventSalonSUPPR)event);
+			} else if (event instanceof EventSalonNewMsg) {
+				observer.colorSalon((EventSalonNewMsg)event);
 			}
 		}
 	}
