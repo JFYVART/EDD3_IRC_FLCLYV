@@ -103,11 +103,8 @@ public class SimpleChatFrameClient extends JFrame {
 
 	private String login;
 
-	private  Color defaultBackColor ;
+	private  Color defaultForeColor= Color.GRAY ;
 	private boolean isChangeColorNeeded = false;
-
-	// public void createOngletSalon(Document documentModel, String salonName)
-	// {}
 
 	private AddNewSalonFrame newSalonFrame;
 
@@ -279,7 +276,6 @@ public class SimpleChatFrameClient extends JFrame {
 		this.setJMenuBar(menuBar);
 		this.creationMenuFichier(menuBar);
 		this.creationMenuOutils(menuBar);
-		//this.creationMenuSalon(menuBar);
 		/**
 		 * Ajout Onglet pour Salon
 		 */
@@ -290,7 +286,6 @@ public class SimpleChatFrameClient extends JFrame {
 
 		this.tabbedPaneSalon = new JTabbedPane(JTabbedPane.TOP);
 
-		// tabbedPaneSalon.setToolTipText(Messages.getString("SimpleChatFrameClient.tabbedPane.toolTipText"));
 		// //$NON-NLS-1$
 		this.contentPane.add(this.tabbedPaneSalon, BorderLayout.CENTER);
 
@@ -309,6 +304,9 @@ public class SimpleChatFrameClient extends JFrame {
 			this.createOngletSalon(documentModel, this.tabbedPaneSalon, salon, clientListModel);
 		}
 
+		// on sauvegarde la couleur de fond
+		//		SimpleChatFrameClient.this.defaultBackColor = this.tabbedPaneSalon.getBackgroundAt(SalonLst.DEFAULT_SALON_ID);
+		//		SimpleChatFrameClient.this.defaultForeColor  =this.tabbedPaneSalon.getForegroundAt(SalonLst.DEFAULT_SALON_ID);
 		JToolBar toolBar = new JToolBar();
 		this.contentPane.add(toolBar, BorderLayout.NORTH);
 
@@ -319,9 +317,6 @@ public class SimpleChatFrameClient extends JFrame {
 		this.txtCrerUnSalon = new JTextField();
 		this.txtCrerUnSalon.setFont(
 				this.txtCrerUnSalon.getFont().deriveFont(this.txtCrerUnSalon.getFont().getStyle() | Font.ITALIC, 9f));
-		// txtCrerUnSalon.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,
-		// 0),
-		// Messages.getString(salonName);
 
 		toolBar.add(this.txtCrerUnSalon);
 		this.txtCrerUnSalon.setColumns(10);
@@ -396,8 +391,7 @@ public class SimpleChatFrameClient extends JFrame {
 				// inserted by : SCLAUDE  [18 Avr. 2017]. On vide le contenu de la zone de saisie de message une fois ce dernier envoyé
 				SimpleChatFrameClient.this.textField.setText("");
 				// Le clic sur l'onglet arrête le chgt de couleur de l'onglet
-				SimpleChatFrameClient.this.isChangeColorNeeded = false;
-				SimpleChatFrameClient.this.gereColorisationOnglet();
+				SimpleChatFrameClient.this.deColoreOnglet(tabbedPaneSalon.getSelectedIndex());
 			}
 
 			@Override
@@ -429,6 +423,7 @@ public class SimpleChatFrameClient extends JFrame {
 		panelSalon.setName(salon.getNomSalon());
 
 		tabbedPaneSalon.addTab(this.salonName.toString(), null, panelSalon, null);
+		this.tabbedPaneSalon.setForegroundAt(tabbedPaneSalon.getSelectedIndex(), SimpleChatFrameClient.this.defaultForeColor);
 
 		panelSalon.setLayout(new BorderLayout(0, 0));
 
@@ -483,12 +478,6 @@ public class SimpleChatFrameClient extends JFrame {
 		JCheckBoxMenuItem chckbxmntmLock = new JCheckBoxMenuItem(Messages.getString("SimpleChatFrameClient.10")); //$NON-NLS-1$
 		chckbxmntmLock.setEnabled(this.isScrollLocked);
 		popupMenu.add(chckbxmntmLock);
-		////		//( Peggy 18/04) menu contextuel --> ajout fermeture salon
-		//		JCheckBoxMenuItem chckbxmntmFermerSalon = new JCheckBoxMenuItem(
-		//				Messages.getString("SimpleChatFrameClient.chckbxmntmNewCheckItem_1.text")); //$NON-NLS-1$
-		//		popupMenu.add(chckbxmntmFermerSalon);
-		//		System.out.println("clic sur fermer salon" + this.salonName);
-		//		chckbxmntmFermerSalon.addActionListener(this.closeSalonAction);
 
 
 		scrollPaneText.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
@@ -512,18 +501,32 @@ public class SimpleChatFrameClient extends JFrame {
 				idPositionOnglet = i;
 			}
 		}
-		// on sauvegarde la couleur de fond
-		SimpleChatFrameClient.this.defaultBackColor = this.tabbedPaneSalon.getForegroundAt(idPositionOnglet);
-		// On change la couleur de l'onglet si on a l'autorisation
-		if (SimpleChatFrameClient.this.isChangeColorNeeded){
-			System.out.println("Chgt Couleur de fond  : Vert");
-			this.tabbedPaneSalon.setForegroundAt(idPositionOnglet, Color.GREEN);
+		// Couleur en cours de l'onglet
+		Color colorOnglet = this.tabbedPaneSalon.getForegroundAt(idPositionOnglet);
+		// On change la couleur de l'onglet si on a l'autorisation et si c'est utile
+		if (SimpleChatFrameClient.this.isChangeColorNeeded) {
+			if(colorOnglet != Color.RED){
+				System.out.println("Chgt Couleur de fond  de l'onglet n° " +idPositionOnglet + " : Vert");
+				this.tabbedPaneSalon.setForegroundAt(idPositionOnglet, Color.RED);
+			}
 		} else {
-			System.out.println("Chgt Couleur de fond  : BackGround");
-			this.tabbedPaneSalon.setForegroundAt(idPositionOnglet, SimpleChatFrameClient.this.defaultBackColor);
+			if (colorOnglet != SimpleChatFrameClient.this.defaultForeColor){
+				System.out.println("Chgt Couleur de fond n° " +idPositionOnglet + " :  BackGround");
+				this.tabbedPaneSalon.setForegroundAt(idPositionOnglet, SimpleChatFrameClient.this.defaultForeColor);
+			}
 		}
-		this.tabbedPaneSalon.repaint();
+		this.tabbedPaneSalon.requestFocusInWindow();
 	}
+
+	protected void deColoreOnglet(int idPositionOnglet) {
+		Color colorOnglet = this.tabbedPaneSalon.getForegroundAt(idPositionOnglet);
+		if (colorOnglet != SimpleChatFrameClient.this.defaultForeColor){
+			System.out.println("On décolore l'onglet en cours n° " +idPositionOnglet + " :  BackGround");
+			this.tabbedPaneSalon.setForegroundAt(idPositionOnglet, SimpleChatFrameClient.this.defaultForeColor);
+		}
+		this.tabbedPaneSalon.requestFocusInWindow();
+	}
+
 
 	public void creationMenuFichier(JMenuBar menuBar) {
 		JMenu mnFile = new JMenu(Messages.getString("SimpleChatFrameClient.5")); //$NON-NLS-1$
@@ -556,45 +559,6 @@ public class SimpleChatFrameClient extends JFrame {
 
 	}
 
-	//	public void creationMenuSalon(JMenuBar menuBar) {
-	//		JMenu mnSalon;
-	//		mnSalon = new JMenu(Messages.getString("SimpleChatFrameClient.mnSalon.text")); //$NON-NLS-1$
-	//		mnSalon.setMnemonic('L');
-	//		menuBar.add(mnSalon);
-
-	//
-	//		JList list_salon = new JList();
-	//		mnSalon.add(list_salon);
-	//		// alimenter list
-	//
-	//		JSeparator separator_1 = new JSeparator();
-	//		mnSalon.add(separator_1);
-	//
-	//		/**
-	//		 * Ouvrir fenêtre création salon
-	//		 */
-	//		JMenuItem mntmCreateSalon = new JMenuItem(Messages.getString("SimpleChatFrameClient.mntmCrerUnNouveau.text")); //$NON-NLS-1$
-	//
-	//		// mntmCreateSalon.addFocusListener(new FocusAdapter() {
-	//		// @Override
-	//		// public void focusGained(FocusEvent e) {
-	//		// }
-	//		// });
-	//		// mntmCreateSalon.addActionListener(new ActionListener() {
-	//		// public void actionPerformed(ActionEvent e) {
-	//		// newSalonFrame.setVisible(true);
-	//		// nouveauNomSalonSaisi = newSalonFrame.newSalon;
-	//		// System.out.println("Nom du nouveau salon demandé : " +
-	//		// nouveauNomSalonSaisi);
-	//		// }
-	//		// });
-	//
-	//		mntmCreateSalon.setAction(this.newSalondAction);
-	//		mnSalon.add(mntmCreateSalon);
-	//		JMenuItem mntmFermerSalon = new JMenuItem(Messages.getString("SimpleChatFrameClient.mntmNewMenuItem.text")); //$NON-NLS-1$
-	//		mnSalon.add(mntmFermerSalon);
-	//		mntmFermerSalon.setAction(this.closeSalonAction);
-	//	}
 
 	public JLabel getLblSender() {
 		return this.lblSender;

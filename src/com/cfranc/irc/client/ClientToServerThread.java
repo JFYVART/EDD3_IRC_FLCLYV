@@ -280,48 +280,36 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 			} else if(!this.salonListModel.isDefaultListSalonModelContainsNomSalon(nomSalon)){
 				this.receiveMessage(loginUtilisateur, " entre dans le salon...");
 			}
-			eventNewMsg = new EventSalonNewMsg(Boolean.TRUE);
-			this.salonListModel.notifyObservers(eventNewMsg);
 			break;
 
 		case ClientServerProtocol.DEL: // Un user quitte le salon
 			if (this.clientListModel.contains(loginUtilisateur)) {
 				this.clientListModel.removeElement(loginUtilisateur);
 				this.receiveMessage(loginUtilisateur, " quitte le salon !");
-				eventNewMsg = new EventSalonNewMsg(Boolean.TRUE);
-				this.salonListModel.notifyObservers(eventNewMsg);
 			}
 			break;
 
 		case ClientServerProtocol.NVSALON: // Le serveur informe de la création
 			// d'un nouveau salon
 			this.ajouteNomSalon(nomSalon, nouveauIdSalon);
-			eventNewMsg = new EventSalonNewMsg(Boolean.FALSE);
-			this.salonListModel.notifyObservers(eventNewMsg);
 			break;
 
 		case ClientServerProtocol.NVMSGPRIVE: // le serveur informe de la
 			// création d'un salon privé
 			// (msg privé)
 			this.ajouteNomSalonPrive(nomSalon, nouveauIdSalon, loginUtilisateur, msg);
-			eventNewMsg = new EventSalonNewMsg(Boolean.TRUE);
-			this.salonListModel.notifyObservers(eventNewMsg);
 			break;
 
 		case ClientServerProtocol.QUITSALON: // le serveur informe de la
 			// suppression d'un salon
 			// (public ou privé)
 			this.supprimeNomSalon(nomSalon, idSalon, loginUtilisateur);
-			eventNewMsg = new EventSalonNewMsg(Boolean.TRUE);
-			this.salonListModel.notifyObservers(eventNewMsg);
 			break;
 
 		default: // Réception d'un message de tchat (cas général)
 			this.receiveMessage(loginUtilisateur, msg);
-			eventNewMsg = new EventSalonNewMsg(Boolean.TRUE);
-			this.salonListModel.notifyObservers(eventNewMsg);
-
-
+			//			eventNewMsg = new EventSalonNewMsg(Boolean.TRUE);
+			//			this.salonListModel.notifyObservers(eventNewMsg);
 			break;
 		}
 	}
