@@ -65,6 +65,7 @@ import com.cfranc.irc.client.IfSenderModel;
 import com.cfranc.irc.server.Salon;
 import com.cfranc.irc.server.SalonLst;
 
+
 public class SimpleChatFrameClient extends JFrame {
 
 	private DefaultListSalonModel salonListModel;
@@ -443,6 +444,7 @@ public class SimpleChatFrameClient extends JFrame {
 			@Override
 			public void insertUpdate(DocumentEvent e) {
 				SimpleChatFrameClient.this.gereColorisationOnglet();
+
 			}
 
 			@Override
@@ -492,6 +494,9 @@ public class SimpleChatFrameClient extends JFrame {
 
 		splitPane.setRightComponent(scrollPaneText);
 	}
+
+
+
 
 	protected void gereColorisationOnglet() {
 		int idPositionOnglet = 0;
