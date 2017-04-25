@@ -50,6 +50,8 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 
 	boolean done;
 
+	private EmoticonManager emoticonManager = new EmoticonManager();
+
 
 
 
@@ -160,6 +162,11 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 					try {
 						this.documentModel.insertString(this.documentModel.getLength(), nomUser + " : ", styleBI);
 						this.documentModel.insertString(this.documentModel.getLength(), msg + "\n", styleGP);
+						EventSalonNewMsg	eventNewMsg = new EventSalonNewMsg(this.salonListModel.getNomSalonById(idSalon),Boolean.TRUE);
+							System.out.println("Salon de l'eventMsg : " + nomSalon);
+							this.salonListModel.notifyObservers(eventNewMsg);
+						
+						
 					} catch (BadLocationException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -311,10 +318,12 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 		default: // Réception d'un message de tchat (cas général)
 			System.out.println("read message cas NewMsg");
 			this.receiveMessage(loginUtilisateur, msg);
+			if (!loginUtilisateur.equals(this.login)){
 			eventNewMsg = new EventSalonNewMsg(this.salonListModel.getNomSalonById(idSalon),Boolean.TRUE);
 			System.out.println("Salon de l'eventMsg : " + nomSalon);
 			// Peggy / 
 			this.salonListModel.notifyObservers(eventNewMsg);
+			}
 			break;
 		}
 	}
@@ -330,6 +339,9 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 			if (!line.isEmpty()) {
 				this.documentModel.insertString(this.documentModel.getLength(), user + " : ", styleBI);
 				this.documentModel.insertString(this.documentModel.getLength(), line + "\n", styleGP);
+				if (this.emoticonManager.isEmoticonInChain(line)) {
+					this.emoticonManager.insertIcon(this.documentModel);
+				}
 			}
 		} catch (BadLocationException e1) {
 			// TODO Auto-generated catch block

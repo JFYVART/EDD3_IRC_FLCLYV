@@ -65,6 +65,7 @@ import com.cfranc.irc.client.IfSenderModel;
 import com.cfranc.irc.server.Salon;
 import com.cfranc.irc.server.SalonLst;
 
+
 public class SimpleChatFrameClient extends JFrame {
 
 	private DefaultListSalonModel salonListModel;
@@ -440,26 +441,6 @@ public class SimpleChatFrameClient extends JFrame {
 
 		JList<String> list = new JList<String>(clientListModelOnglet);
 
-		documentModelOnglet.addDocumentListener(new DocumentListener() {
-
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				//SimpleChatFrameClient.this.gereColorisationOnglet();
-			}
-
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-		});
-
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.addListSelectionListener(new ListSelectionListener() {
 			@Override
@@ -537,6 +518,7 @@ public class SimpleChatFrameClient extends JFrame {
 
 		splitPane.setRightComponent(scrollPaneText);
 	}
+
 
 	protected void gereColorisationOnglet(String salonToColor) {
 		int idPositionOnglet = 0;
