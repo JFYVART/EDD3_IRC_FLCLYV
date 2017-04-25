@@ -184,7 +184,7 @@ public class BroadcastThread extends Thread {
 		// Puis on l'affecte au nouveau salon
 		HashMap<User, ServerToClientThread> HashDuSalon = createOrRetrieveClientTreadsMapByIdSalon(nouveauIdSalon);
 		// on renvoie le message avec l'idSalon à tout le monde
-		broadCastMessage(user, pwd, msg, commande, idSalon, nomSalon, recepteur, nouveauIdSalon);
+		broadCastMessage(user, pwd, "", commande, idSalon, nomSalon, recepteur, nouveauIdSalon);
 		// On ajoute le user créant le salon au salon mais sans s'ajouter au Thread:
 		addClient(nouveauIdSalon, user, HashEnCours.get(user), false);
 		// Puis on inscrit les autres users du salon
@@ -260,9 +260,9 @@ public class BroadcastThread extends Thread {
 			String nomSalon, String recepteur, int nouveauIdSalon) {
 
 		// On récupère le clientTreadsMap lié au salon
-		HashMap<User, ServerToClientThread> clientTreadsMap = getClientTreadsMap(idSalon);
+		//HashMap<User, ServerToClientThread> clientTreadsMap = getClientTreadsMap(idSalon);
 		// on supprime le User du clientTreadsMap
-		clientTreadsMap.remove(user);
+		//clientTreadsMap.remove(user);
 		// On envoie le message à tout le monde pour que chaun mette à jour son
 		// IHM
 		broadCastMessage(user, pwd, msg, commande, idSalon, nomSalon, recepteur, nouveauIdSalon);
