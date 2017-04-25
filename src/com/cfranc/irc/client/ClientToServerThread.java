@@ -10,14 +10,9 @@ import java.net.Socket;
 import java.util.HashMap;
 
 import javax.swing.DefaultListModel;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.Element;
-import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 import com.cfranc.irc.ClientServerProtocol;
@@ -25,7 +20,6 @@ import com.cfranc.irc.server.Salon;
 import com.cfranc.irc.server.SalonLst;
 import com.cfranc.irc.server.User;
 import com.cfranc.irc.ui.SimpleChatClientApp;
-import com.cfranc.irc.ui.SimpleChatFrameClient;
 
 public class ClientToServerThread extends Thread implements IfSenderModel {
 
@@ -55,6 +49,8 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 	int nouveauIdSalon  = SalonLst.DEFAULT_SALON_ID;
 
 	boolean done;
+
+	private EmoticonManager emoticonManager = new EmoticonManager();
 
 
 
@@ -326,50 +322,13 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 		this.receiveMessage(user, line, styleBI, styleGP);
 	}
 
-
-	private void insertIcon(StyledDocument documentModelOnglet) {
-		// TODO Auto-generated method stubStyledDocument doc = (StyledDocument) p.getDocument();
-		try {
-			String text = documentModelOnglet.getText(0, documentModelOnglet.getLength());
-			System.out.println("text reçu par InsertIcon :" + text);
-			int index = text.indexOf(":)");
-			int start = 0;
-			if (index >=0) {
-				while (index > -1) {
-					Element el = documentModelOnglet.getCharacterElement(index);
-					if (StyleConstants.getIcon(el.getAttributes()) == null) {
-						//					documentModelOnglet.remove(index, 2);
-						SimpleAttributeSet attrs = new SimpleAttributeSet();
-						StyleConstants.setIcon(attrs, this.insererIconeImg("happy.jpg"));
-						documentModelOnglet.insertString(index-1, ":)", attrs);
-					}
-					start = index + 2;
-					index = text.indexOf(":)", start);
-				}
-			}
-		} catch (BadLocationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-
-	}
-
-	//inserted by: SCLAUDE [24/04/2017] : Gestion des émoticones
-	public Icon insererIconeImg(String cheminImage){
-		Icon imageIcon = (new ImageIcon(SimpleChatFrameClient.class.getResource(cheminImage)));
-		return imageIcon;
-	}
-
-
-
 	public void receiveMessage(String user, String line, Style styleBI, Style styleGP) {
 		try {
 			if (!line.isEmpty()) {
 				this.documentModel.insertString(this.documentModel.getLength(), user + " : ", styleBI);
 				this.documentModel.insertString(this.documentModel.getLength(), line + "\n", styleGP);
-				if (line.indexOf(":")>=0) {
-					this.insertIcon(this.documentModel);
+				if (this.emoticonManager.isEmoticonInChain(line)) {
+					this.emoticonManager.insertIcon(this.documentModel);
 				}
 			}
 		} catch (BadLocationException e1) {
