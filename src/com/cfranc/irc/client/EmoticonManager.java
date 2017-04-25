@@ -105,10 +105,10 @@ public class EmoticonManager {
 					while (index > -1) {
 						Element el = documentModelOnglet.getCharacterElement(index);
 						if (StyleConstants.getIcon(el.getAttributes()) == null) {
-							//					documentModelOnglet.remove(index, 2);
+							documentModelOnglet.remove(index, 2);
 							SimpleAttributeSet attrs = new SimpleAttributeSet();
 							StyleConstants.setIcon(attrs, this.insererIconeImg(emoticon.getIconeFileName()));
-							documentModelOnglet.insertString(index-1, emoticon.getChaine(), attrs);
+							documentModelOnglet.insertString(index, emoticon.getChaine(), attrs);
 						}
 						start = index + 2;
 						index = text.indexOf(emoticon.getChaine(), start);
