@@ -450,7 +450,7 @@ public class SimpleChatFrameClient extends JFrame {
 
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				SimpleChatFrameClient.this.gereColorisationOnglet();
+				//SimpleChatFrameClient.this.gereColorisationOnglet();
 			}
 
 			@Override
@@ -495,6 +495,7 @@ public class SimpleChatFrameClient extends JFrame {
 				System.out.println("Gère color sur update");
 				
 				
+				
 //				int indiceOnglet = 0;
 //				for (int i = 0; i < tabbedPaneSalon.getTabCount(); i++) {
 //					if (salonName.equals(tabbedPaneSalon.getTitleAt(i))){
@@ -537,12 +538,14 @@ public class SimpleChatFrameClient extends JFrame {
 		splitPane.setRightComponent(scrollPaneText);
 	}
 
-	protected void gereColorisationOnglet() {
+	protected void gereColorisationOnglet(String salonToColor) {
 		int idPositionOnglet = 0;
-		int index =0;
+		System.out.println("salon to color : " + salonToColor);
 		// Recherche du salon concerné.
 		for (int i = 0; i < this.tabbedPaneSalon.getTabCount(); i++) {
-			if(this.tabbedPaneSalon.getTitleAt(i).equals(SimpleChatFrameClient.this.salonName)){
+			//if(this.tabbedPaneSalon.getTitleAt(i).equals(SimpleChatFrameClient.this.salonName)){
+				// Peg--> salonName doit être celui de l'eventSalonNewMsg transmis à l'appel de la fonction
+			if(this.tabbedPaneSalon.getTitleAt(i).equals(salonToColor)){
 				idPositionOnglet = i;
 			}
 		}
@@ -561,16 +564,15 @@ public class SimpleChatFrameClient extends JFrame {
 			if (colorOnglet != SimpleChatFrameClient.this.defaultForeColor){
 //				//tests : peggy	
 				//si rouge, si sélection alors decolorise
-				index = this.tabbedPaneSalon.getSelectedIndex();
-				this.deColoreOnglet	(index);
-				System.out.println("Pas en défaut - Chgt Couleur de fond n° " +index + " :  BackGround");
+				idPositionOnglet = this.tabbedPaneSalon.getSelectedIndex();
+				this.deColoreOnglet	(idPositionOnglet);
+				System.out.println("Pas en défaut - Chgt Couleur de fond n° " +idPositionOnglet );
 				//this.tabbedPaneSalon.setForegroundAt(idPositionOnglet, SimpleChatFrameClient.this.defaultForeColor);
 			}
 		
 		}
 		this.tabbedPaneSalon.requestFocusInWindow();
 		//réinit des compteurs d'onglets
-		index=0;
 		idPositionOnglet = 0;
 		
 	}
@@ -725,7 +727,9 @@ public class SimpleChatFrameClient extends JFrame {
 		if(event.getIsSalonToColor()){
 			System.out.println("Autorisation colorisation");
 			this.isChangeColorNeeded = event.getIsSalonToColor();
-			this.gereColorisationOnglet();
+			//Peg : transmettre le nom du salon à la fonction de colorisation
+			System.out.println("salon transmis à colorisation : " + event.getNameSalon());
+			this.gereColorisationOnglet(event.getNameSalon());
 		} else {
 			System.out.println("Interdiction colorisation");
 //			//tests : peggy

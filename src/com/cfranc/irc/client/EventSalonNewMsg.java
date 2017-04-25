@@ -2,8 +2,10 @@ package com.cfranc.irc.client;
 
 public class EventSalonNewMsg {
 	private Boolean isSalonToColor;
+	private String nameSalon;
 
-	public EventSalonNewMsg(Boolean isSalonToColor) {
+	public EventSalonNewMsg(String nameSalon, Boolean isSalonToColor) {
+		this.nameSalon = nameSalon;
 		this.isSalonToColor = isSalonToColor;
 	}
 
@@ -13,6 +15,14 @@ public class EventSalonNewMsg {
 
 	public void setIsSalonToColor(Boolean isSalonToColor) {
 		this.isSalonToColor = isSalonToColor;
+	}
+
+	public String getNameSalon() {
+		return nameSalon;
+	}
+
+	public void setNameSalon(String nameSalon) {
+		this.nameSalon = nameSalon;
 	}
 
 

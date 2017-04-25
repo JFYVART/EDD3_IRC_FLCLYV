@@ -66,5 +66,18 @@ public class DefaultListSalonModel extends DefaultListModel<Salon> {
 
 		return result;
 	}
+	
+	public String getNomSalonById(int salonId){
+		String result = "";
+		for (int i = 0; i <this.size(); i++) {
+			Salon salonLu = this.getElementAt(i);
+			if (salonLu.getIdSalon()==salonId){
+				result = salonLu.getNomSalon();
+			}
+		}
+
+		return result;
+	}
+	
 
 }

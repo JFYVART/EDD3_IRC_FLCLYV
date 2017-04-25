@@ -311,8 +311,9 @@ public class ClientToServerThread extends Thread implements IfSenderModel {
 		default: // Réception d'un message de tchat (cas général)
 			System.out.println("read message cas NewMsg");
 			this.receiveMessage(loginUtilisateur, msg);
-			eventNewMsg = new EventSalonNewMsg(Boolean.TRUE);
-			// Peggy / comment sur desactiv plus de blocage après envoi message mais plus de color!!
+			eventNewMsg = new EventSalonNewMsg(this.salonListModel.getNomSalonById(idSalon),Boolean.TRUE);
+			System.out.println("Salon de l'eventMsg : " + nomSalon);
+			// Peggy / 
 			this.salonListModel.notifyObservers(eventNewMsg);
 			break;
 		}
